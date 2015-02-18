@@ -1,0 +1,41 @@
+Account:	Stephen Turnbull
+Email:		turnbull@sk.tsukuba.ac.jp
+User details: 	yasekkumi/yasegumi
+App Name: 	TurnbullLab
+Description:	A Twitter application for experimenting with research projects.
+Website:	http://turnbull.sk.tsukuba.ac.jp/Twitter/TurnbullLab
+Callback:	<none>
+
+Organization
+Information about the organization or company associated with your application.
+  This information is optional.
+Organization		None
+Organization website	None
+
+Application Settings
+Your application's Consumer Key and Secret are used to authenticate requests
+  to the Twitter Platform.
+Access level		Read-only
+Consumer Key (API Key)	OGL1S2D1TNJg0fFFPYxW6YxLr
+Callback URL		None
+Sign in with Twitter	No
+App-only authentication	https://api.twitter.com/oauth2/token
+Request token URL	https://api.twitter.com/oauth/request_token
+Authorize URL		https://api.twitter.com/oauth/authorize
+Access token URL	https://api.twitter.com/oauth/access_token
+
+Consumer Key (API Key)	     OGL1S2D1TNJg0fFFPYxW6YxLr
+Consumer Secret (API Secret) aBTLiUw3ure8eIimRta3S8j3yGL9tApTVMIT4VxhvF7E6cFJyZ
+Access Level		     Read-only (modify app permissions)
+Owner			     yasegumi
+Owner ID		     3024132060
+
+Your Access Token
+This access token can be used to make API requests on your own account's
+  behalf. Do not share your access token secret with anyone.
+Access Token		3024132060-HkQUZMOoYsk1JugmJyZJlFGgWteWDyIbinoV4Jb
+Access Token Secret	j3wVpVR1s0pWrdjvd0aFpfVDTLPlC1xLc0tiHlioP2t89
+Access Level		Read-only
+Owner			yasegumi
+Owner ID		3024132060
+
