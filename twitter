@@ -1,0 +1,41 @@
+Account:	Stephen Turnbull
+Email:		turnbull@sk.tsukuba.ac.jp
+User details: 	***REMOVED***/***REMOVED***
+App Name: 	TurnbullLab
+Description:	A Twitter application for experimenting with research projects.
+Website:	http://turnbull.sk.tsukuba.ac.jp/Twitter/TurnbullLab
+Callback:	<none>
+
+Organization
+Information about the organization or company associated with your application.
+  This information is optional.
+Organization		None
+Organization website	None
+
+Application Settings
+Your application's Consumer Key and Secret are used to authenticate requests
+  to the Twitter Platform.
+Access level		Read-only
+Consumer Key (API Key)	***REMOVED***
+Callback URL		None
+Sign in with Twitter	No
+App-only authentication	https://api.twitter.com/oauth2/token
+Request token URL	https://api.twitter.com/oauth/request_token
+Authorize URL		https://api.twitter.com/oauth/authorize
+Access token URL	https://api.twitter.com/oauth/access_token
+
+Consumer Key (API Key)	     ***REMOVED***
+Consumer Secret (API Secret) ***REMOVED***
+Access Level		     Read-only (modify app permissions)
+Owner			     ***REMOVED***
+Owner ID		     ***REMOVED***
+
+Your Access Token
+This access token can be used to make API requests on your own account's
+  behalf. Do not share your access token secret with anyone.
+Access Token		***REMOVED***
+Access Token Secret	***REMOVED***
+Access Level		Read-only
+Owner			***REMOVED***
+Owner ID		***REMOVED***
+
