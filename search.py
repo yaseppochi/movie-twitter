@@ -14,6 +14,7 @@ import json
 # #### Use command line options!!
 QUERY = "Hobbit movie"
 COUNT = 100
+INDENT = 1
 
 api = get_my_api()
 
@@ -45,7 +46,7 @@ print("Done.")
 
 with open("search-results.json", "w") as f:
     for i in range(len(statuses)):
-        print(json.dumps(statuses[i], indent=1), file=f)
+        print(json.dumps(statuses[i], indent=INDENT), file=f)
 
 print("limit", results.rate_limit_limit,
       "remaining", results.rate_limit_remaining,
