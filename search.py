@@ -43,7 +43,7 @@ for _ in range(5):
     statuses += results['statuses']
 print("Done.")
 
-with open("twitter-search-results.json", "w") as f:
+with open("search-results.json", "w") as f:
     for i in range(len(statuses)):
         print(json.dumps(statuses[i], indent=1), file=f)
 
