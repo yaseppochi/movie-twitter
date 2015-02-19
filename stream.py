@@ -1,50 +1,30 @@
 #!/usr/bin/env python3.4
 
-# Stream tweets for a particular filter the API.
+# Stream tweets for a particular filter from the API.
+# A sample of 1000 tweets with the filter "movie" collected from
+# Thu Feb 19 02:50:15 +0000 2015 to Thu Feb 19 02:52:51 +0000 2015
+# resulted in 4,376,897 bytes of formatted JSON or 4377 bytes/tweet
+# in 156 seconds, a rate of 2424 MB/day and 553,846 tweets/day for
+# an estimated 255 GB and 58,153,830 tweets in the data set.
 
 from myauth import get_my_api
-from twitter.api import TwitterHTTPError
-from urllib.error import HTTPError
+import twitter
 import json
 
 # #### Use command line options!!
-QUERY = "Hobbit movie"
-COUNT = 100
+QUERY = "movie"
+COUNT = 1000
+INDENT = 1
 
 api = get_my_api()
 
-# #### Everything below this line is bogus!
+stream = twitter.TwitterStream(auth=api.auth)
+tweets = stream.statuses.filter(track=QUERY)
 
-# #### This should be initialized "null".
-results = api.search.tweets(q=QUERY, count=COUNT)
-print(dir(results))
+with open("stream-results.json", "w") as f:
+    for i in range(COUNT):
+        print(json.dumps(next(tweets), indent=INDENT), file=f)
+        print(".", end='' if (i+1)%65 else '\n')
+    
+print(COUNT, "tweets done.")
 
-# #### This too.
-statuses = results['statuses']
-for _ in range(5):
-    print(len(statuses), "received so far.")
-    try:
-        next_query = results['search_metadata']['next_results']
-    except KeyError as e:
-        print("Not a key:", e)
-        break
-    except HTTPError as e:
-        print(e)
-        print("You have probably exceeded a rate limit!!")
-        break
-    except TwitterHTTPError as e:
-        print(e)
-        print("You have probably exceeded a rate limit!!")
-        break
-    kw = dict([kv.split('=') for kv in next_query[1:].split('&')])
-    results = api.search.tweets(**kw)
-    statuses += results['statuses']
-print("Done.")
-
-with open("twitter-search-results.json", "w") as f:
-    for i in range(len(statuses)):
-        print(json.dumps(statuses[i], indent=1), file=f)
-
-print("limit", results.rate_limit_limit,
-      "remaining", results.rate_limit_remaining,
-      "reset", results.rate_limit_reset)
