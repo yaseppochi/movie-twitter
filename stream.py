@@ -36,9 +36,20 @@ MOVIES = [ # "movie",
     "My Life Directed",
     "The Salvation",
     "Snow Girl and the Dark Crystal",
-    "Wild Canaries"
+    "Wild Canaries",
+    # Released on Mar. 6
+    "Chappie",
+    "Unfinished Business",
+    "Bad Asses on the Bayou",
+    "Compared to What? The Improbable Journey of Barney Frank",
+    "Hayride 2",
+    "The Life and Mind of Mark DeFriest",
+    "The Mafia Only Kills in Summer",
+    "Merchants of Doubt",
+    "The Second Best Exotic Marigold Hotel",
+    "These Final Hours",
     ]
-COUNT = 10
+COUNT = 10000
 INDENT = 1
 
 def track_join(ks):
@@ -50,22 +61,27 @@ print(movies)
 api = get_my_api()
 
 i = 0
+vol = 0
 working = True
+need_connect = True
 while working:
     try:
-        stream = twitter.TwitterStream(auth=api.auth)
-        tweets = stream.statuses.filter(track=movies)
-        with open("stream-results-%d.json" % i, "w") as f:
+        if need_connect:
+            stream = twitter.TwitterStream(auth=api.auth)
+            tweets = stream.statuses.filter(track=movies)
+            need_connect = False
+        with open("stream-results-%d.json" % vol, "w") as f:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
-                print(".", end='' if (i+1)%65 else '\n')
-                if i >= COUNT:
+                i = i + 1
+                if os.path.lexists("/tmp/TwitterStreamStop"):
                     working = False
                     break
-                else:
-                    i = i + 1
+                elif i % COUNT == 0:
+                    vol = vol + 1
+                    break
     except StopIteration as e:
-        print("!", end='' if (i+1)%65 else '\n')
+        need_connect = True
     
-print(COUNT, "tweets done.")
+print(i, "tweets done.")
 
