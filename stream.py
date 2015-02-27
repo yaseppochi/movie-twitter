@@ -13,45 +13,59 @@ import json
 
 # #### Use command line options!!
 MOVIES = [ # "movie",
-          # Released on Feb. 2
-          "The DUFF",
-          "Hot Tub Time Machine 2",
-          "McFarland, USA",
-          "Badlapur",
-          "Digging Up the Marrow",
-          "Queen and Country",
-          "Wild Tales",
-          # Released on Feb. 27
-          "Focus (2015)",
-          "The Lazarus Effect",
-          "'71",
-          "Deli Man",
-          "Eastern Boys",
-          "Everly",
-          "Farewell to Hollywood",
-          "Futuro Beach",
-          "The Hunting Ground",
-          "A La Mala",
-          "Maps to the Stars",
-          "My Life Directed",
-          "The Salvation",
-          "Snow Girl and the Dark Crystal",
-          "Wild Canaries"]
-COUNT = 1000
+    # Released on Feb. 2
+    "The DUFF",
+    "Hot Tub Time Machine 2",
+    "McFarland, USA",
+    "Badlapur",
+    "Digging Up the Marrow",
+    "Queen and Country",
+    "Wild Tales",
+    # Released on Feb. 27
+    "Focus (2015)",
+    "The Lazarus Effect",
+    "'71",
+    "Deli Man",
+    "Eastern Boys",
+    "Everly",
+    "Farewell to Hollywood",
+    "Futuro Beach",
+    "The Hunting Ground",
+    "A La Mala",
+    "Maps to the Stars",
+    "My Life Directed",
+    "The Salvation",
+    "Snow Girl and the Dark Crystal",
+    "Wild Canaries"
+    ]
+COUNT = 10
 INDENT = 1
+
+def track_join(ks):
+    return ','.join(k.translate({ord(',') : None}) for k in ks)
+
+movies = track_join(MOVIES)
+print(movies)
 
 api = get_my_api()
 
-stream = twitter.TwitterStream(auth=api.auth)
-movies = ','.join(MOVIES)
-tweets = stream.statuses.filter(track=movies)
-print(movies)
-
-
-with open("stream-results.json", "w") as f:
-    for i in range(COUNT):
-        print(json.dumps(next(tweets), indent=INDENT), file=f)
-        print(".", end='' if (i+1)%65 else '\n')
+i = 0
+working = True
+while working:
+    try:
+        stream = twitter.TwitterStream(auth=api.auth)
+        tweets = stream.statuses.filter(track=movies)
+        with open("stream-results-%d.json" % i, "w") as f:
+            for tweet in tweets:
+                print(json.dumps(tweet, indent=INDENT), file=f)
+                print(".", end='' if (i+1)%65 else '\n')
+                if i >= COUNT:
+                    working = False
+                    break
+                else:
+                    i = i + 1
+    except StopIteration as e:
+        print("!", end='' if (i+1)%65 else '\n')
     
 print(COUNT, "tweets done.")
 
