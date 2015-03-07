@@ -10,7 +10,7 @@ import json
 
 # #### Implement command-line options!
 
-STREAM = "results/stream.json"          # or "search.json"
+STREAM = "stream-results-1.json"        # or "search.json"
 
 with open(STREAM) as stream:            # #### Need to handle Twitter API too.
     s = stream.read()                   # #### Need online algorithm.
@@ -30,9 +30,13 @@ for k in tweet.keys():
         pass                            # #### Should get distributions here
                                         # But text, timestamps no point.
 
+count = 0
 while True:
+    if count % 100 == 0:
+        print(".", end='' if (count + 1) % 1000 else '\n')
+    count = count + 1
     try:
-        tweet, offset = decoder.raw_decode(s[start:]) # #### Horrible consing?
+        tweet, offset = decoder.raw_decode(s[start:start+50000]) # #### Horrible consing?
         start = start + offset + 1
     except Exception as e:
         print("Error:", e)
