@@ -10,6 +10,9 @@
 from myauth import get_my_api
 import twitter
 import json
+import os
+import os.path
+import sys
 
 # #### Use command line options!!
 MOVIES = [ # "movie",
@@ -48,15 +51,26 @@ MOVIES = [ # "movie",
     "Merchants of Doubt",
     "The Second Best Exotic Marigold Hotel",
     "These Final Hours",
+    # Released on Mar. 13
+    "Cinderella", # (2015)
+    "Run All Night",
+    "Eva",
+    "Home Sweet Hell",
+    "It Follows",
+    "Seymour: An Introduction",
+    "The Tales of Hoffmann", # (2015 re-issue)
+    "The Wrecking Crew",
     ]
 COUNT = 10000
-INDENT = 1
-
+INDENT = 1                              # INDENT=0 doesn't help.  None?
+PUNCT = { ord(',') : None,
+          ord('?') : None }
 def track_join(ks):
     return ','.join(k.translate({ord(',') : None}) for k in ks)
 
 movies = track_join(MOVIES)
 print(movies)
+sys.stdout.flush()
 
 api = get_my_api()
 
@@ -64,17 +78,23 @@ i = 0
 vol = 0
 working = True
 need_connect = True
+if os.path.lexists("/tmp/TwitterStreamStop"):
+    print("Stale TwitterStreamStop found.")
+    # There is a race here!
+    os.remove("/tmp/TwitterStreamStop")
 while working:
     try:
         if need_connect:
             stream = twitter.TwitterStream(auth=api.auth)
-            tweets = stream.statuses.filter(track=movies)
+            tweets = stream.statuses.filter(track=movies, stall_warnings=True)
             need_connect = False
         with open("stream-results-%d.json" % vol, "w") as f:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
                 if os.path.lexists("/tmp/TwitterStreamStop"):
+                    print("TwitterStreamStop requested.")
+                    os.remove("/tmp/TwitterStreamStop")
                     working = False
                     break
                 elif i % COUNT == 0:
@@ -82,6 +102,6 @@ while working:
                     break
     except StopIteration as e:
         need_connect = True
-    
-print(i, "tweets done.")
 
+print(i, "tweets done.")
+sys.stdout.flush()
