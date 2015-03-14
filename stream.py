@@ -101,6 +101,12 @@ while working:
                     vol = vol + 1
                     break
     except StopIteration as e:
+        print e
+        sys.stdout.flush()
+        need_connect = True
+    except ConnectionResetError as e:
+        print e
+        sys.stdout.flush()
         need_connect = True
 
 print(i, "tweets done.")
