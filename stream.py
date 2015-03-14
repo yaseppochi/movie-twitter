@@ -60,6 +60,17 @@ MOVIES = [ # "movie",
     "Seymour: An Introduction",
     "The Tales of Hoffmann", # (2015 re-issue)
     "The Wrecking Crew",
+    # Released on Mr. 20
+    "The Divergent Series: Insurgent",
+    "Do You Believe?",
+    "The Gunman",
+    "Can't Stand Losing You: Surviving the Police",
+    "Danny Collins",
+    "Kumiko, The Treasure Hunter",      # (on Wed.)
+    "Love and Lost",                    # (Shi Gu)
+    "Shi Gu",
+    "Spring",                           # (2015)
+    "Zombeavers",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
