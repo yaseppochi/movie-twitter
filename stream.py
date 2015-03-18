@@ -103,6 +103,8 @@ while working:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
+                if i % 100 == 0:
+                    f.flush()
                 if os.path.lexists("/tmp/TwitterStreamStop"):
                     print("TwitterStreamStop requested.")
                     os.remove("/tmp/TwitterStreamStop")
