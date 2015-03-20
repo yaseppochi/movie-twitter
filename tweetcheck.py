@@ -6,13 +6,14 @@ The tweet stream should be a sequence of tweets in JSON format.
 """
 
 from collections import Counter
+import argparse
 import json
 
-# #### Implement command-line options!
+parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
+parser.add_argument('STREAM', type=str, help="File of JSON tweets")
+args = parser.parse_args()
 
-STREAM = "stream-results-1.json"        # or "search.json"
-
-with open(STREAM) as stream:            # #### Need to handle Twitter API too.
+with open(args.STREAM) as stream:       # #### Need to handle Twitter API too.
     s = stream.read()                   # #### Need online algorithm.
 
 decoder = json.JSONDecoder()
