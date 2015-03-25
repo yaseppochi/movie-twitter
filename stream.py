@@ -25,7 +25,7 @@ MOVIES = [ # "movie",
     "Queen and Country",
     "Wild Tales",
     # Released on Feb. 27
-    "Focus (2015)",
+    "Focus",                            #  (2015)
     "The Lazarus Effect",
     "'71",
     "Deli Man",
@@ -60,7 +60,7 @@ MOVIES = [ # "movie",
     "Seymour: An Introduction",
     "The Tales of Hoffmann", # (2015 re-issue)
     "The Wrecking Crew",
-    # Released on Mr. 20
+    # Released on Mar. 20
     "The Divergent Series: Insurgent",
     "Do You Believe?",
     "The Gunman",
@@ -71,13 +71,28 @@ MOVIES = [ # "movie",
     "Shi Gu",
     "Spring",                           # (2015)
     "Zombeavers",
+    # Released on Mar. 27
+    "Get Hard",
+    "Home",                             # (2015)
+    "Cupcakes",
+    "A Girl Like Her",
+    "Man From Reno",
+    "The Riot Club",
+    "The Salt of the Earth",
+    "Serena",
+    "Welcome to New York",
+    "While We're Young",
+    "White God",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
 PUNCT = { ord(',') : None,
-          ord('?') : None }
+          ord('?') : None,
+          ord(':') : None,
+          ord(';') : None,
+          }
 def track_join(ks):
-    return ','.join(k.translate({ord(',') : None}) for k in ks)
+    return ','.join(k.translate(PUNCT) for k in ks)
 
 movies = track_join(MOVIES)
 print(movies)
@@ -99,6 +114,9 @@ while working:
             stream = twitter.TwitterStream(auth=api.auth)
             tweets = stream.statuses.filter(track=movies, stall_warnings=True)
             need_connect = False
+        # #### results/20150325.091639/stream-results-13.json was left open and
+        # stream.py restarted.  It appears to have skipped over that file?
+        # (It's empty in the next series, too.  What happened here?
         with open("stream-results-%d.json" % vol, "w") as f:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
