@@ -83,6 +83,15 @@ MOVIES = [ # "movie",
     "Welcome to New York",
     "While We're Young",
     "White God",
+    # Released on Apr. 3
+    "Furious 7",
+    "5 to 7",
+    "Cheatin'",
+    "Effie Gray",
+    "Lambert & Stamp",
+    "The Living",
+    "SBK The-Movie",
+    "Woman in Gold",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
