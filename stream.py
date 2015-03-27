@@ -120,6 +120,9 @@ if os.path.lexists("/tmp/TwitterStreamStop"):
     print("Stale TwitterStreamStop found.")
     # There is a race here!
     os.remove("/tmp/TwitterStreamStop")
+
+signal.signal(signal.SIGHUP, handle_hup)
+
 while working:
     try:
         if need_connect:
