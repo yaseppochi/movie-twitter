@@ -109,6 +109,9 @@ sys.stdout.flush()
 
 api = get_my_api()
 
+def handle_hup(signum, frame):
+    raise IOError('SIGHUP')
+
 i = 0
 vol = 0
 working = True
@@ -140,6 +143,11 @@ while working:
                 elif i % COUNT == 0:
                     vol = vol + 1
                     break
+    except IOError as e:
+        print(e)
+        if e.value[0] == 'SIGHUP':
+            print("Handled raised SIGHUP.")
+        working = False
     except StopIteration as e:
         print(e)
         sys.stdout.flush()
