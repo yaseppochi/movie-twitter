@@ -12,6 +12,7 @@ import twitter
 import json
 import os
 import os.path
+import signal
 import sys
 
 # #### Use command line options!!
