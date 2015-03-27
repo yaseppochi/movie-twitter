@@ -149,7 +149,7 @@ while working:
                     break
     except IOError as e:
         print(e)
-        if e.value[0] == 'SIGHUP':
+        if e.args[0] == 'SIGHUP':
             print("Handled raised SIGHUP.")
         working = False
     except StopIteration as e:
