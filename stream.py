@@ -126,27 +126,26 @@ if os.path.lexists("/tmp/TwitterStreamStop"):
 
 signal.signal(signal.SIGHUP, handle_hup)
 
+def interate_tweets(api):
+    stream = twitter.TwitterStream(auth=api.auth)
+    tweets = stream.statuses.filter(track=movies, stall_warnings=True)
+    for tweet in tweets:
+        yield tweet
+
 while working:
     try:
-        if need_connect:
-            stream = twitter.TwitterStream(auth=api.auth)
-            tweets = stream.statuses.filter(track=movies, stall_warnings=True)
-            need_connect = False
         # #### results/20150325.091639/stream-results-13.json was left open and
         # stream.py restarted.  It appears to have skipped over that file?
         # (It's empty in the next series, too.)  What happened here?
+        tweets = generate_tweets()
+        next(tweets)
         with open("stream-results-%d.json" % vol, "w") as f:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
                 if i % 100 == 0:
                     f.flush()
-                # normal exit
-                if os.path.lexists("/tmp/TwitterStreamStop"):
-                    print("TwitterStreamStop requested.")
-                    os.remove("/tmp/TwitterStreamStop")
-                    working = False
-                    break
+                # normal file rotation
                 elif i % COUNT == 0:
                     vol = vol + 1
                     break
@@ -159,8 +158,8 @@ while working:
             vol = vol + 1
             # I don't know how to close a Twitter API connection,
             # so just drop it on the floor.
-            need_connect = True
             working = True
+        # Normal exit (#### maybe this could be SIGTERM?)
         elif e.errno == signal.SIGUSR1:
             print("Caught SIGUSR1, exiting.")
         else:
