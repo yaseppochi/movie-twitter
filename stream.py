@@ -110,8 +110,10 @@ sys.stdout.flush()
 
 api = get_my_api()
 
-def handle_hup(signum, frame):
-    raise IOError('SIGHUP')
+def handle_signal(signum, frame):
+    """Handle signal by raising IOError."""
+    print("Caught signal", signum)
+    raise IOError(signum)
 
 i = 0
 vol = 0
@@ -139,6 +141,7 @@ while working:
                 i = i + 1
                 if i % 100 == 0:
                     f.flush()
+                # normal exit
                 if os.path.lexists("/tmp/TwitterStreamStop"):
                     print("TwitterStreamStop requested.")
                     os.remove("/tmp/TwitterStreamStop")
@@ -149,17 +152,26 @@ while working:
                     break
     except IOError as e:
         print(e)
-        if e.args[0] == 'SIGHUP':
-            print("Handled raised SIGHUP.")
+        # Exit somewhat gracefully on signals by default.
         working = False
+        if e.errno == signal.SIGHUP:
+            print("Caught SIGHUP, reinitializing stream and file %d." % (vol,))
+            vol = vol + 1
+            # I don't know how to close a Twitter API connection,
+            # so just drop it on the floor.
+            need_connect = True
+            working = True
+        elif e.errno == signal.SIGUSR1:
+            print("Caught SIGUSR1, exiting.")
+        else:
+            print("Caught signal %d, exiting.\n%s\n" % (e.errno, e.errstring))
     except StopIteration as e:
         print(e)
-        sys.stdout.flush()
         need_connect = True
     except ConnectionResetError as e:
         print(e)
-        sys.stdout.flush()
         need_connect = True
+    sys.stdout.flush()
 
 print(i, "tweets done.")
 sys.stdout.flush()
