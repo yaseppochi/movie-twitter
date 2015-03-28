@@ -118,11 +118,6 @@ def handle_signal(signum, frame):
 i = 0
 vol = 0
 working = True
-need_connect = True
-if os.path.lexists("/tmp/TwitterStreamStop"):
-    print("Stale TwitterStreamStop found.")
-    # There is a race here!
-    os.remove("/tmp/TwitterStreamStop")
 
 signal.signal(signal.SIGHUP, handle_hup)
 
