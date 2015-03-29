@@ -110,10 +110,18 @@ sys.stdout.flush()
 
 api = get_my_api()
 
+signal_names = [name for name in dir(signal)
+                if name.startswith("SIG") and not name.startswith("SIG_")]
+signal_dict = {}
+for name in signal_names:
+    signal_dict[getattr(signal,name)] = name
+
 def handle_signal(signum, frame):
     """Handle signal by raising IOError."""
+    # This is bogus since it's not a real IOError.
+    e = IOError()
     print("Caught signal", signum)
-    raise IOError(signum)
+    raise IOError(signum, signal_dict[signum])
 
 i = 0
 vol = 0
@@ -149,16 +157,10 @@ while working:
         # Exit somewhat gracefully on signals by default.
         working = False
         if e.errno == signal.SIGHUP:
-            print("Caught SIGHUP, reinitializing stream and file %d." % (vol,))
             vol = vol + 1
-            # I don't know how to close a Twitter API connection,
-            # so just drop it on the floor.
             working = True
-        # Normal exit (#### maybe this could be SIGTERM?)
-        elif e.errno == signal.SIGUSR1:
-            print("Caught SIGUSR1, exiting.")
-        else:
-            print("Caught signal %d, exiting.\n%s\n" % (e.errno, e.errstring))
+        print("Caught signal %d (%s)%s." ¥
+              % (e.errno, e.errstring, ", exiting" if not working))
     except StopIteration as e:
         print(e)
         need_connect = True
