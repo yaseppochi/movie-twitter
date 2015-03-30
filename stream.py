@@ -118,18 +118,18 @@ for name in signal_names:
 
 def handle_signal(signum, frame):
     """Handle signal by raising IOError."""
-    # This is bogus since it's not a real IOError.
-    e = IOError()
     print("Caught signal", signum)
-    raise IOError(signum, signal_dict[signum])
+    # This is bogus since it's not a real IOError.
+    raise IOError(signum, signal_dict[signum], "<OS signal>")
 
 i = 0
 vol = 0
 working = True
 
-signal.signal(signal.SIGHUP, handle_hup)
+signal.signal(signal.SIGHUP, handle_signal)
+signal.signal(signal.SIGTERM, handle_signal)
 
-def interate_tweets(api):
+def generate_tweets(api):
     stream = twitter.TwitterStream(auth=api.auth)
     tweets = stream.statuses.filter(track=movies, stall_warnings=True)
     for tweet in tweets:
@@ -143,6 +143,10 @@ while working:
         tweets = generate_tweets()
         next(tweets)
         with open("stream-results-%d.json" % vol, "w") as f:
+            # #### When things break, we see
+            # 1. stream-results-###.json in the directory list
+            # 2. it does not show up as open in lsof
+            # 3. a TCP connection to Twitter does not show up in lsof
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
