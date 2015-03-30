@@ -117,10 +117,9 @@ for name in signal_names:
     signal_dict[getattr(signal,name)] = name
 
 def handle_signal(signum, frame):
-    """Handle signal by raising IOError."""
+    """Handle signal by raising OSError."""
     print("Caught signal", signum)
-    # This is bogus since it's not a real IOError.
-    raise IOError(signum, signal_dict[signum], "<OS signal>")
+    raise OSError(signum, signal_dict[signum], "<OS signal>")
 
 i = 0
 vol = 0
@@ -156,7 +155,7 @@ while working:
                 elif i % COUNT == 0:
                     vol = vol + 1
                     break
-    except IOError as e:
+    except OSError as e:
         print(e)
         # Exit somewhat gracefully on signals by default.
         working = False
@@ -164,7 +163,7 @@ while working:
             vol = vol + 1
             working = True
         print("Caught signal %d (%s)%s." \
-              % (e.errno, e.errstring, ", exiting" if not working else ""))
+              % (e.errno, e.strerror, ", exiting" if not working else ""))
     except StopIteration as e:
         print(e)
         need_connect = True
