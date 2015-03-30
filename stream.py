@@ -140,7 +140,7 @@ while working:
         # #### results/20150325.091639/stream-results-13.json was left open and
         # stream.py restarted.  It appears to have skipped over that file?
         # (It's empty in the next series, too.)  What happened here?
-        tweets = generate_tweets()
+        tweets = generate_tweets(api)
         next(tweets)
         with open("stream-results-%d.json" % vol, "w") as f:
             # #### When things break, we see
