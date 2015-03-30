@@ -163,7 +163,7 @@ while working:
         if e.errno == signal.SIGHUP:
             vol = vol + 1
             working = True
-        print("Caught signal %d (%s)%s." ¥
+        print("Caught signal %d (%s)%s." \
               % (e.errno, e.errstring, ", exiting" if not working))
     except StopIteration as e:
         print(e)
