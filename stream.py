@@ -152,7 +152,7 @@ while working:
                 if i % 100 == 0:
                     f.flush()
                 # normal file rotation
-                elif i % COUNT == 0:
+                if i % COUNT == 0:
                     vol = vol + 1
                     break
     except OSError as e:
