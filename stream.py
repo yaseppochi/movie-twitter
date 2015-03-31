@@ -164,7 +164,7 @@ while working:
             vol = vol + 1
             working = True
         print("%s caught signal %d%s\n%s." \
-              % (ctime(), e.errno, ", exiting" if not working else "",
+              % (time.ctime(), e.errno, ", exiting" if not working else "",
                  e.strerror))
     except StopIteration as e:
         print(e)
