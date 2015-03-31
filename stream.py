@@ -119,7 +119,6 @@ for name in signal_names:
 
 def handle_signal(signum, frame):
     """Handle signal by raising OSError."""
-    print("Caught signal", signum)
     raise OSError(signum, signal_dict[signum], "<OS signal>")
 
 i = 0
