@@ -14,6 +14,7 @@ import os
 import os.path
 import signal
 import sys
+import time
 
 # #### Use command line options!!
 MOVIES = [ # "movie",
@@ -162,8 +163,9 @@ while working:
         if e.errno == signal.SIGHUP:
             vol = vol + 1
             working = True
-        print("Caught signal %d (%s)%s." \
-              % (e.errno, e.strerror, ", exiting" if not working else ""))
+        print("%s caught signal %d%s\n%s." \
+              % (ctime(), e.errno, ", exiting" if not working else "",
+                 e.strerror))
     except StopIteration as e:
         print(e)
         need_connect = True
