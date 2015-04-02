@@ -8,13 +8,14 @@
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
 from myauth import get_my_api
-import twitter
 import json
 import os
 import os.path
 import signal
 import sys
 import time
+import twitter
+import urllib
 
 # #### Use command line options!!
 MOVIES = [ # "movie",
@@ -153,25 +154,25 @@ while working:
                     f.flush()
                 # normal file rotation
                 if i % COUNT == 0:
-                    vol = vol + 1
                     break
+    # Handle signals, exiting somewhat gracefully by default.
+    # SIGHUP breaks out of iteration and starts new volume.
     except OSError as e:
         print(e)
-        # Exit somewhat gracefully on signals by default.
-        working = False
-        if e.errno == signal.SIGHUP:
-            vol = vol + 1
-            working = True
+        if e.errno != signal.SIGHUP:
+                working = False
         print("%s caught signal %d%s\n%s." \
               % (time.ctime(), e.errno, ", exiting" if not working else "",
                  e.strerror))
     except StopIteration as e:
         print(e)
-        need_connect = True
-    except ConnectionResetError as e:
+    except (twitter.api.TwitterHTTPError,
+            urllib.error.HTTPError,
+            ConnectionResetError
+            ) as e:
         print(e)
-        need_connect = True
     sys.stdout.flush()
+    vol = vol + 1
 
 print(i, "tweets done.")
 sys.stdout.flush()
