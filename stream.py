@@ -95,6 +95,37 @@ MOVIES = [ # "movie",
     "The Living",
     "SBK The-Movie",
     "Woman in Gold",
+    # Released on Apr. 10
+    "The Longest Ride ,"
+    "Clouds of Sils Maria ,"
+    "Desert Dancer ,"
+    "Ex Machina ,"
+    "Freetown ,"
+    "Kill Me Three Times ,"
+    "Rebels of the Neon God (2015 re-release) ,"
+    "The Sisterhood of Night",
+    # Released on April 17th (Friday)
+    "Child 44",
+    "Monkey Kingdom",
+    "Paul Blart: Mall Cop 2",
+    "Unfriended",
+    "Alex of Venice",
+    "Beyond the Reach",
+    "The Dead Lands",
+    "Felix and Meira",
+    "Monsters: Dark Continent",
+    "The Road Within",
+    "True Story",
+    # Released on April 24th (Friday) 
+    "The Age of Adaline",
+    "Little Boy",
+    "Adult Beginners",
+    "After The Ball",
+    "Brotherly Love",
+    "Kung Fu Killer",
+    "Misery Loves Comedy",
+    "WARx2",
+    "The Water Diviner",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
