@@ -97,12 +97,12 @@ MOVIES = [ # "movie",
     "Woman in Gold",
     # Released on Apr. 10
     "The Longest Ride",
-    "Clouds of Sils Maria,"
-    "Desert Dancer,"
-    "Ex Machina,"
-    "Freetown,"
-    "Kill Me Three Times,"
-    "Rebels of the Neon God (2015 re-release),"
+    "Clouds of Sils Maria",
+    "Desert Dancer",
+    "Ex Machina",
+    "Freetown",
+    "Kill Me Three Times",
+    "Rebels of the Neon God (2015 re-release)",
     "The Sisterhood of Night",
     # Released on April 17th (Friday)
     "Child 44",
