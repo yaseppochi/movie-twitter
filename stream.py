@@ -102,7 +102,7 @@ MOVIES = [ # "movie",
     "Ex Machina",
     "Freetown",
     "Kill Me Three Times",
-    "Rebels of the Neon God (2015 re-release)",
+    "Rebels of the Neon God",           # (2015 re-release) 
     "The Sisterhood of Night",
     # Released on April 17th (Friday)
     "Child 44",
