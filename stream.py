@@ -207,8 +207,21 @@ while working:
             urllib.error.HTTPError,
             ConnectionResetError
             ) as e:
+        print(dir(e))
         print(e)
         # AFAIK most of these errors indicate we should stop.
+        #
+        # Definitely 406 should stop, it's a program error:
+        #   Twitter sent status 406 for URL:
+        #   1.1/statuses/filter.json using parameters: (...)
+        #   details: b'Parameter track item index 69 too long: \
+        #   The Longest Ride Clouds o\r\n'
+        #
+        # 420 should probably reset delay to at least 900 seconds:
+        #   Twitter sent status 420 for URL:
+        #   1.1/statuses/filter.json using parameters: (...)
+        #   details: b'Easy there, Turbo. Too many requests recently. \
+        #   Enhance your calm.\r\n'
         working = False
         if str(e).startswith("Twitter sent status 503"):
             working = True
