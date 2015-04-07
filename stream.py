@@ -156,6 +156,7 @@ def handle_signal(signum, frame):
 i = 0
 vol = 0
 working = True
+delay = 1                               # delay == 1 is ignored.
 
 signal.signal(signal.SIGHUP, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal)
@@ -171,9 +172,14 @@ while working:
         # #### results/20150325.091639/stream-results-13.json was left open and
         # stream.py restarted.  It appears to have skipped over that file?
         # (It's empty in the next series, too.)  What happened here?
+        if delay > 1:
+            time.sleep(delay)
+            if delay < 900:
+                delay = delay * 2
         tweets = generate_tweets(api)
         next(tweets)
         with open("stream-results-%d.json" % vol, "w") as f:
+            delay = 1
             # #### When things break, we see
             # 1. stream-results-###.json in the directory list
             # 2. it does not show up as open in lsof
@@ -202,8 +208,10 @@ while working:
             ConnectionResetError
             ) as e:
         print(e)
-        # Sometimes some of these errors indicate we should stop.
+        # AFAIK most of these errors indicate we should stop.
         working = False
+        if str(e).startswith("Twitter sent status 503"):
+            working = True
     sys.stdout.flush()
     vol = vol + 1
 
