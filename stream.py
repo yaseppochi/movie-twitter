@@ -211,13 +211,13 @@ while working:
         print(e)
         # AFAIK most of these errors indicate we should stop.
         #
-        # Definitely 406 should stop, it's a program error:
+        # 406 stops.  Normally it's a program error:
         #   Twitter sent status 406 for URL:
         #   1.1/statuses/filter.json using parameters: (...)
         #   details: b'Parameter track item index 69 too long: \
         #   The Longest Ride Clouds o\r\n'
         #
-        # 420 should probably reset delay to at least 900 seconds:
+        # 420 resets delay to at least 900 seconds:
         #   Twitter sent status 420 for URL:
         #   1.1/statuses/filter.json using parameters: (...)
         #   details: b'Easy there, Turbo. Too many requests recently. \
@@ -225,6 +225,9 @@ while working:
         working = False
         if str(e).startswith("Twitter sent status 503"):
             working = True
+        elif str(e).startswith("Twitter sent status 420"):
+            working = True
+            delay = 1000                # approximately 16 minutes
     sys.stdout.flush()
     vol = vol + 1
 
