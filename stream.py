@@ -169,17 +169,18 @@ def generate_tweets(api):
 
 while working:
     try:
-        # #### results/20150325.091639/stream-results-13.json was left open and
-        # stream.py restarted.  It appears to have skipped over that file?
-        # (It's empty in the next series, too.)  What happened here?
         if delay > 1:
             time.sleep(delay)
             if delay < 900:
                 delay = delay * 2
         tweets = generate_tweets(api)
-        next(tweets)
+        delay = 1                       # If we got this far,
+                                        # we have a successful connection.
+
+        # #### results/20150325.091639/stream-results-13.json was left open
+        # and stream.py restarted.  It appears to have skipped over that
+        # file?  (It's empty in the next series, too.)  What happened here?
         with open("stream-results-%d.json" % vol, "w") as f:
-            delay = 1
             # #### When things break, we see
             # 1. stream-results-###.json in the directory list
             # 2. it does not show up as open in lsof
@@ -203,10 +204,8 @@ while working:
                  e.strerror))
     except StopIteration as e:
         print(e)
-    except (twitter.api.TwitterHTTPError,
-            urllib.error.HTTPError,
-            ConnectionResetError
-            ) as e:
+                                            # errors actually observed:
+    except twitter.api.TwitterError as e:   # TwitterHTTPError
         print(dir(e))
         print(e)
         # AFAIK most of these errors indicate we should stop.
@@ -228,6 +227,15 @@ while working:
         elif str(e).startswith("Twitter sent status 420"):
             working = True
             delay = 1000                # approximately 16 minutes
+                                        # errors actually observed:
+    except (urllib.error.HTTPError,
+            http.client.HTTPException,  # BadStatusLine (empty)
+            ConnectionError             # ConnectionResetError
+            ) as e:
+        print(dir(e))
+        print(e)
+        # AFAIK most of these errors are continuable.
+        working = True
     sys.stdout.flush()
     vol = vol + 1
 
