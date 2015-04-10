@@ -156,7 +156,9 @@ def handle_signal(signum, frame):
 i = 0
 vol = 0
 working = True
-delay = 1                               # delay == 1 is ignored.
+need_connection = True
+delay = None                            # delay == 0 means disconnect occured,
+                                        # but reconnect immediately.
 
 signal.signal(signal.SIGHUP, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal)
@@ -169,13 +171,13 @@ def generate_tweets(api):
 
 while working:
     try:
-        if delay > 1:
-            time.sleep(delay)
-            if delay < 900:
-                delay = delay * 2
-        tweets = generate_tweets(api)
-        delay = 1                       # If we got this far,
-                                        # we have a successful connection.
+        if need_connection:
+            if delay:
+                time.sleep(delay)
+            tweets = generate_tweets(api)
+
+        delay = None                    # If we got this far,
+        need_connection = False         # we have a successful connection.
 
         # #### results/20150325.091639/stream-results-13.json was left open
         # and stream.py restarted.  It appears to have skipped over that
@@ -185,6 +187,10 @@ while working:
             # 1. stream-results-###.json in the directory list
             # 2. it does not show up as open in lsof
             # 3. a TCP connection to Twitter does not show up in lsof
+
+            # #### We could get and save one tweet here, and then reset
+            # delay and need_connection if successful.
+
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
@@ -195,10 +201,26 @@ while working:
                     break
     # Handle signals, exiting somewhat gracefully by default.
     # SIGHUP breaks out of iteration and starts new volume.
+    #
+    # Twitter sez:
+    # Reconnecting
+    #
+    # Once an established connection drops, attempt to reconnect
+    # immediately. If the reconnect fails, slow down your reconnect
+    # attempts according to the type of error experienced.
+    #
+    # Connection churn
+    #
+    # Repeatedly opening and closing a connection (churn) wastes
+    # server resources. Keep your connections as stable and long-lived
+    # as possible.
+    #
+    # (Some stuff moved to where it applies.  Irrelevant (?) stuff elided.)
+
     except OSError as e:
         print(e)
         if e.errno != signal.SIGHUP:
-                working = False
+            working = False
         print("%s caught signal %d%s\n%s." \
               % (time.ctime(), e.errno, ", exiting" if not working else "",
                  e.strerror))
@@ -216,26 +238,68 @@ while working:
         #   details: b'Parameter track item index 69 too long: \
         #   The Longest Ride Clouds o\r\n'
         #
-        # 420 resets delay to at least 900 seconds:
-        #   Twitter sent status 420 for URL:
-        #   1.1/statuses/filter.json using parameters: (...)
-        #   details: b'Easy there, Turbo. Too many requests recently. \
-        #   Enhance your calm.\r\n'
         working = False
         if str(e).startswith("Twitter sent status 503"):
             working = True
+            if delay is None:
+                delay = 0
+            elif delay >= 5:
+                delay = delay*2
+            else:
+                delay = 5
+            need_connect = True
         elif str(e).startswith("Twitter sent status 420"):
+            # Example:
+            #   Twitter sent status 420 for URL:
+            #   1.1/statuses/filter.json using parameters: (...)
+            #   details: b'Easy there, Turbo. Too many requests recently. \
+            #   Enhance your calm.\r\n'
+            # Twitter sez:
+            #   Back off exponentially for HTTP 420 errors. Start with a
+            #   1 minute wait and double each attempt. Note that every
+            #   HTTP 420 received increases the time you must wait until
+            #   rate limiting will no longer will be in effect for your
+            #   account.
             working = True
-            delay = 1000                # approximately 16 minutes
-                                        # errors actually observed:
+            # I'd like to add "and delay < 15*60" ... .
+            if delay is not None and delay >= 60:
+                delay = 2*delay
+            elif delay is None or delay < 60:
+                delay = 60
     except (urllib.error.HTTPError,
             http.client.HTTPException,  # BadStatusLine (empty)
-            ConnectionError             # ConnectionResetError
             ) as e:
         print(dir(e))
         print(e)
         # AFAIK most of these errors are continuable.
         working = True
+        # Twitter sez:
+        #   Back off exponentially for HTTP errors for which
+        #   reconnecting would be appropriate. Start with a 5 second
+        #   wait, doubling each attempt, up to 320 seconds.
+        if delay is None:
+            delay = 0
+        elif delay < 5:
+            delay = 5
+        elif delay >= 5 and delay < 320:
+            delay = 2*delay
+        else:                           # delay >= 320
+            pass
+    except ConnectionError as e:        # ConnectionResetError
+        # Twitter sez:
+        #   Back off linearly for TCP/IP level network errors. These
+        #   problems are generally temporary and tend to clear
+        #   quickly. Increase the delay in reconnects by 250ms each
+        #   attempt, up to 16 seconds.
+        if delay is None or delay < 16:
+            delay = delay + 0.250       # If there was an HTTP error, it
+                                        # won't kill us to wait a few secs.
+                                        # We could introduce a flag, but....
+        else:
+            delay = 2*delay             # We are in the process of backing
+                                        # off another error, and did not yet
+                                        # get a connection.  We should not
+                                        # short-circuit that backoff.
     sys.stdout.flush()
     vol = vol + 1
 
