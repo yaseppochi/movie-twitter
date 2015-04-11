@@ -239,7 +239,7 @@ while working:
         print(e)
                                             # errors actually observed:
     except twitter.api.TwitterError as e:   # TwitterHTTPError
-        print(dir(e))
+        print(type(e))
         print(e)
         # AFAIK most of these errors indicate we should stop.
         #
@@ -280,7 +280,7 @@ while working:
     except (urllib.error.HTTPError,
             http.client.HTTPException,  # BadStatusLine (empty)
             ) as e:
-        print(dir(e))
+        print(type(e))
         print(e)
         # AFAIK most of these errors are continuable.
         working = True
