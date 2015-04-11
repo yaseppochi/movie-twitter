@@ -128,7 +128,8 @@ MOVIES = [ # "movie",
     "The Water Diviner",
     # Released on May 1st Friday
     "Avengers: Age of Ultron",
-    "The 100-Year Old Man Who Climbed Out the Window and Disappeared",
+    # The 100-Year Old Man Who Climbed Out the Window and Disappeared
+    "100-Year Old Man Who Climbed Out Window Disappeared",
     "Far from Men",
     "Far from the Madding Crowd",
     "Hyena",
