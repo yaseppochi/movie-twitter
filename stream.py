@@ -126,6 +126,16 @@ MOVIES = [ # "movie",
     "Misery Loves Comedy",
     "WARx2",
     "The Water Diviner",
+    # Released on May 1st Friday
+    "Avengers: Age of Ultron",
+    "The 100-Year Old Man Who Climbed Out the Window and Disappeared",
+    "Far from Men",
+    "Far from the Madding Crowd",
+    "Hyena",
+    "Iris",                             # (2015)
+    "Ride",                             # (2015)
+    "Tangerines",
+    "Welcome to Me",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
