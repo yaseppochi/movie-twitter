@@ -188,9 +188,6 @@ while working:
                 time.sleep(delay)
             tweets = generate_tweets(api)
 
-        delay = None                    # If we got this far,
-        need_connection = False         # we have a successful connection.
-
         # #### results/20150325.091639/stream-results-13.json was left open
         # and stream.py restarted.  It appears to have skipped over that
         # file?  (It's empty in the next series, too.)  What happened here?
@@ -259,7 +256,7 @@ while working:
                 delay = delay*2
             else:
                 delay = 5
-            need_connect = True
+            need_connection = True
         elif str(e).startswith("Twitter sent status 420"):
             # Example:
             #   Twitter sent status 420 for URL:
@@ -315,7 +312,10 @@ while working:
     sys.stdout.flush()
     vol = vol + 1
     if i == iold:
-        delay = 2 * delay if delay else 5
+        delay = 2 * delay if delay and delay < 60 else 5
+    else:
+        delay = None
+        need_connection = False
 
 print(i, "tweets done.")
 sys.stdout.flush()
