@@ -181,6 +181,7 @@ def generate_tweets(api):
         yield tweet
 
 while working:
+    iold = i
     try:
         if need_connection:
             if delay:
@@ -313,6 +314,8 @@ while working:
                                         # short-circuit that backoff.
     sys.stdout.flush()
     vol = vol + 1
+    if i == iold:
+        delay = 2 * delay if delay else 5
 
 print(i, "tweets done.")
 sys.stdout.flush()
