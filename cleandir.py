@@ -3,7 +3,7 @@
 import os
 import stat
 
-for i in range(1000000, 1000001):
+for i in range(1000000, 1000003):
     fn = "stream-results-{0:d}.json".format(i)
     s = os.stat(fn)
     sz = s[stat.ST_SIZE]
