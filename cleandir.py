@@ -22,11 +22,12 @@ def cleanfile(path):
             val = KEPT
     else:
         val = NONEXISTENT
-    return val 
+    return val
 
 lastchange = None
 old_status = None
 for i in range(0, 1500000):
+    print("{0:d}: ".format(i), end="")
     fn = "stream-results-{0:d}.json".format(i)
     status = cleanfile(os.path.join(os.getcwd(), fn))
     if old_status is None:
