@@ -40,7 +40,7 @@ for i in range(0, 1500000):
             print("INTERNAL ERROR PROCESSING {0:s}".format(fn))
             status = old_status          # Hack!
         else:
-            print(template.format(lastchange, i, status_names[old_status]))
+            print(template.format(lastchange, i-1, status_names[old_status]))
         lastchange = i
         old_status = status
 print(template.format(lastchange, i, status_names[old_status]))
