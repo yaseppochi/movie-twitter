@@ -31,6 +31,7 @@ for i in range(0, 1500000):
     status = cleanfile(os.path.join(os.getcwd(), fn))
     if old_status is None:
         lastchange = i
+        oldstatus = status
     elif old_status == status:
         pass
     else:
@@ -41,4 +42,4 @@ for i in range(0, 1500000):
             print(template.format(lastchange, i, status_names[old_status]))
         lastchange = i
         old_status = status
-        
+print(template.format(lastchange, i, status_names[old_status]))
