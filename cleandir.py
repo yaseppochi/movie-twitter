@@ -26,7 +26,7 @@ def cleanfile(path):
 
 lastchange = None
 old_status = None
-for i in range(10000, 999999):
+for i in range(0, 1500000):
     fn = "stream-results-{0:d}.json".format(i)
     status = cleanfile(os.path.join(os.getcwd(), fn))
     if old_status is None:
