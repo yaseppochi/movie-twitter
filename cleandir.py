@@ -26,13 +26,13 @@ def cleanfile(path):
 
 lastchange = None
 old_status = None
-for i in range(0, 1500000):
-    print("{0:d}: ".format(i), end="")
+for i in range(0, 5):
     fn = "stream-results-{0:d}.json".format(i)
     status = cleanfile(os.path.join(os.getcwd(), fn))
+    print("{0:d}: ".format(i), end="")
     if old_status is None:
         lastchange = i
-        oldstatus = status
+        old_status = status
     elif old_status == status:
         pass
     else:
