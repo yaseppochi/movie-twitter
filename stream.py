@@ -184,6 +184,8 @@ while working:
     iold = i
     try:
         if need_connection:
+            print("Restarting connection before opening v{0:d}".format(vol))
+            sys.stdout.flush()
             if delay:
                 time.sleep(delay)
             tweets = generate_tweets(api)
@@ -203,11 +205,14 @@ while working:
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
                 i = i + 1
+                # #### Do we actually need this flush?
                 if i % 100 == 0:
                     f.flush()
                 # normal file rotation
                 if i % COUNT == 0:
                     break
+            need_connection = False
+
     # Handle signals, exiting somewhat gracefully by default.
     # SIGHUP breaks out of iteration and starts new volume.
     #
@@ -233,8 +238,18 @@ while working:
         print("%s caught signal %d%s\n%s." \
               % (time.ctime(), e.errno, ", exiting" if not working else "",
                  e.strerror))
-    except StopIteration as e:
-        print(e)
+    except StopIteration as e:          # Shouldn't happen, but if it does,
+        print(e)                        # AFAIK it's safe to continue
+
+    # #### This analysis is very confused and may be incomplete.  FIXME!
+    # The errors and exceptions below signal something bad happened.
+    # In most cases the connection broke but we can continue.  Now:
+    # If we can't continue, we don't need a connection.
+    # The common case is normal loop termination and a new file.
+    # So:
+    # If working is set to False, we don't need to specify need_connection.
+    # Since need_connection is False normally, each of the below should specify
+    # working = False or need_connection = True (but not both).
                                             # errors actually observed:
     except twitter.api.TwitterError as e:   # TwitterHTTPError
         print(type(e))
@@ -247,17 +262,16 @@ while working:
         #   details: b'Parameter track item index 69 too long: \
         #   The Longest Ride Clouds o\r\n'
         #
-        working = False
         if str(e).startswith("Twitter sent status 503"):
-            working = True
+            need_connection = True
             if delay is None:
                 delay = 0
             elif delay >= 5:
                 delay = delay*2
             else:
                 delay = 5
-            need_connection = True
         elif str(e).startswith("Twitter sent status 420"):
+            need_connection = True
             # Example:
             #   Twitter sent status 420 for URL:
             #   1.1/statuses/filter.json using parameters: (...)
@@ -269,19 +283,23 @@ while working:
             #   HTTP 420 received increases the time you must wait until
             #   rate limiting will no longer will be in effect for your
             #   account.
-            working = True
             # I'd like to add "and delay < 15*60" ... .
             if delay is not None and delay >= 60:
                 delay = 2*delay
             elif delay is None or delay < 60:
                 delay = 60
+        elif str(e).startswith("Twitter sent status 406"):
+            # This is usually a broken filter expression.
+            working = False
+        else:
+            working = False             # Be cautious, don't know what it is!
     except (urllib.error.HTTPError,
             http.client.HTTPException,  # BadStatusLine (empty)
             ) as e:
         print(type(e))
         print(e)
-        # AFAIK most of these errors are continuable.
-        working = True
+        need_connection = True
+        # I believe these are continuable.
         # Twitter sez:
         #   Back off exponentially for HTTP errors for which
         #   reconnecting would be appropriate. Start with a 5 second
@@ -295,6 +313,9 @@ while working:
         else:                           # delay >= 320
             pass
     except ConnectionError as e:        # ConnectionResetError
+        print(type(e))
+        print(e)
+        need_connection = True
         # Twitter sez:
         #   Back off linearly for TCP/IP level network errors. These
         #   problems are generally temporary and tend to clear
@@ -309,13 +330,20 @@ while working:
                                         # off another error, and did not yet
                                         # get a connection.  We should not
                                         # short-circuit that backoff.
-    sys.stdout.flush()
-    vol = vol + 1
-    if i == iold:
-        delay = 2 * delay if delay and delay < 60 else 5
+    except BaseException as e:          # #### Is catch-all the TRT?
+        print(type(e))
+        print(e)
+        need_connection = True
+
+    if i <= iold + 5:                   # We processed wa-a-ay too few tweets!
+        # This gets up to a minute in at most 8 consecutive errors.
+        # Then we should generate at most 1448 files per day in worst case.
+        delay = 2*delay if delay and delay < 60 else 5
+        print("Setting delay to {0} due to short loop".format(delay))
     else:
         delay = None
-        need_connection = False
+    sys.stdout.flush()
+    vol = vol + 1
 
 print(i, "tweets done.")
 sys.stdout.flush()
