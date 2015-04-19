@@ -164,6 +164,9 @@ def handle_signal(signum, frame):
     """Handle signal by raising OSError."""
     raise OSError(signum, signal_dict[signum], "<OS signal>")
 
+class HangupException(Exception):
+    pass
+
 i = 0
 vol = 0
 working = True
@@ -204,6 +207,8 @@ while working:
 
             for tweet in tweets:
                 print(json.dumps(tweet, indent=INDENT), file=f)
+                if tweet.get('hangup'):
+                    raise HangupException()
                 i = i + 1
                 # #### Do we actually need this flush?
                 if i % 100 == 0:
@@ -231,18 +236,8 @@ while working:
     #
     # (Some stuff moved to where it applies.  Irrelevant (?) stuff elided.)
 
-    except OSError as e:
-        print(e)
-        if e.errno != signal.SIGHUP:
-            working = False
-        print("%s caught signal %d%s\n%s." \
-              % (time.ctime(), e.errno, ", exiting" if not working else "",
-                 e.strerror))
-    except StopIteration as e:          # Shouldn't happen, but if it does,
-        print(e)                        # AFAIK it's safe to continue
-
     # #### This analysis is very confused and may be incomplete.  FIXME!
-    # The errors and exceptions below signal something bad happened.
+    # The errors and exceptions below signal that something bad happened.
     # In most cases the connection broke but we can continue.  Now:
     # If we can't continue, we don't need a connection.
     # The common case is normal loop termination and a new file.
@@ -250,6 +245,23 @@ while working:
     # If working is set to False, we don't need to specify need_connection.
     # Since need_connection is False normally, each of the below should specify
     # working = False or need_connection = True (but not both).
+
+    except HangupException as e:
+        print(e)
+        need_connection = True
+    except OSError as e:
+        print(e)
+        if e.errno != signal.SIGHUP:
+            working = False
+        else:
+            need_connection = True
+        print("%s caught signal %d%s\n%s." \
+              % (time.ctime(), e.errno, ", exiting" if not working else "",
+                 e.strerror))
+    except StopIteration as e:          # Shouldn't happen (should be caught
+                                        # by HangupException), but if it does,
+        print(e)                        # AFAIK it's safe to continue
+
                                             # errors actually observed:
     except twitter.api.TwitterError as e:   # TwitterHTTPError
         print(type(e))
@@ -262,6 +274,9 @@ while working:
         #   details: b'Parameter track item index 69 too long: \
         #   The Longest Ride Clouds o\r\n'
         #
+        # Other HTTP statuses:
+        # https://dev.twitter.com/streaming/overview/connecting
+        # https://dev.twitter.com/overview/api/response-codes
         if str(e).startswith("Twitter sent status 503"):
             need_connection = True
             if delay is None:
@@ -338,7 +353,12 @@ while working:
     if i <= iold + 5:                   # We processed wa-a-ay too few tweets!
         # This gets up to a minute in at most 8 consecutive errors.
         # Then we should generate at most 1448 files per day in worst case.
-        delay = 2*delay if delay and delay < 60 else 5
+        if delay is None:
+            delay = 5
+        elif delay and delay < 60:
+            delay = 2*delay
+        else:
+            pass
         print("Setting delay to {0} due to short loop".format(delay))
     else:
         delay = None
