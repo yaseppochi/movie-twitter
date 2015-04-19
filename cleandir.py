@@ -2,6 +2,7 @@
 
 import os
 import stat
+import sys
 
 ERROR = -1
 NONEXISTENT = 0
@@ -41,6 +42,7 @@ for i in range(0, 1500000):
             status = old_status          # Hack!
         else:
             print(template.format(lastchange, i-1, status_names[old_status]))
+        sys.stdout.flush()
         lastchange = i
         old_status = status
 print(template.format(lastchange, i, status_names[old_status]))
