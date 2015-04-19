@@ -137,6 +137,28 @@ MOVIES = [ # "movie",
     "Ride",                             # (2015)
     "Tangerines",
     "Welcome to Me",
+    # Released on May 8th (Friday)
+    "Hot Pursuit",
+    "5 Flights Up",
+    "The D Train",
+    "I Am Big Bird",                    # (on Wed.)
+    "In the Name of my Daughter",
+    "Maggie",
+    "Noble",
+    "Saint Laurent",
+    "The Seven Five",                   # (on Thu.)
+    "Skin Trade",
+    # Released on May 15th (Friday)
+    "Mad Max: Fury Road",
+    "Pitch Perfect 2",
+    "Animals",                          # (2015)
+    "The Connection",
+    "Every Secret Thing",
+    "The Film Critic",
+    "Good Kill",
+    "I'll See You In My Dreams",
+    "Set Fire to the Stars",
+    "Where Hope Grows",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
