@@ -148,6 +148,8 @@ MOVIES = [ # "movie",
     "Saint Laurent",
     "The Seven Five",                   # (on Thu.)
     "Skin Trade",
+    "Sister Code",
+    # "WARx2",                          # Not released on 4/24?
     # Released on May 15th (Friday)
     "Mad Max: Fury Road",
     "Pitch Perfect 2",
@@ -159,6 +161,26 @@ MOVIES = [ # "movie",
     "I'll See You In My Dreams",
     "Set Fire to the Stars",
     "Where Hope Grows",
+    "Forbidden Films",                  # (on Wed.)
+    "Know How",
+    "One Cut, One Life",                # (on Wed.)
+    "Our Man in Tehran",
+    # Released on May 22th (Friday)
+    "Poltergeist",                      # (2015)
+    "Tomorrowland",
+    "Aloft",
+    "Chocolate City",
+    "The Farewell Party",
+    "Love At First Sight",
+    "Sunshine Superman",
+    "When Marnie Was There",
+    # Released on May 29th (Friday)
+    "Aloha",
+    "San Andreas",
+    "Club Life",
+    "Gemma Bovary",
+    "Heaven Knows What",
+    "Results",
     ]
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
