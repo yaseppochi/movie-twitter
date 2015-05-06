@@ -90,7 +90,7 @@ idnos = sorted(tweet_movies.keys())
 for idno in idnos:
     print("{0:d} ".format(idno), end='')
     for m in tweet_movies[idno]:
-        print(m, end=' ')
+        print('"{0}"'.format(m), end=' ')
     print()
 print(word_movies)
 print(movie_words)
