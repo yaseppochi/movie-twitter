@@ -79,12 +79,9 @@ while True:
         continue
 
     tweet_movies[idno] = []
-    if object_count < 10: print(idno)
     for m in movies:
-        if object_count < 10: print(m)
         found = True
         for w in movie_words[m]:
-            if object_count < 10: print(w)
             word_count += 1
             if not (w in text.lower()):
                 found = False
