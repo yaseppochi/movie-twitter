@@ -90,10 +90,10 @@ while True:
             movie_count += 1
             tweet_movies[idno].append(m)
 
-print("{0:d} tweets and ".format(len(tweet_movies)), sep='')
-print("{0:d} non-tweets in ".format(not_tweet_count), sep='')
+print("{0:d} tweets and ".format(len(tweet_movies)), end='')
+print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
-print("{0:d} words and ".format(word_count), sep='')
+print("{0:d} words and ".format(word_count), end='')
 print("{0:d} movies matched.".format(movie_count))
 idnos = sorted(tweet_movies.keys())
 for idno in idnos:
