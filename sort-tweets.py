@@ -104,5 +104,5 @@ for idno in idnos:
     for m in tweet_movies[idno]:
         print('"{0}"'.format(m), end=' ')
     print()
-print(word_movies)
-print(movie_words)
+print(json.dumps(word_movies, indent=4))
+print(json.dumps(movie_words, indent=4))
