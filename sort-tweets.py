@@ -63,9 +63,11 @@ while True:
         start = start + offset + 1
         object_count = object_count + 1
     except Exception as e:
-        print("Error:", e)
-        print("|", s[start:start+100])
-        print("len(s) =", end, "start = ", start)
+        # Currently there's no real point in printing the exception,
+        # since we bail out in any case.
+        # print("Error:", e)
+        # print("|", s[start:start+100])
+        print("start = ", start, "end =", end)
         # TODO: If the decoder raises, start doesn't get incremented.  So
         # there's nothing to do but bail out.
         break
