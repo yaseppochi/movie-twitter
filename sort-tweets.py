@@ -67,7 +67,7 @@ while True:
         # since we bail out in any case.
         # print("Error:", e)
         # print("|", s[start:start+100])
-        print("start = ", start, "end =", end)
+        print("next = ", start, "end =", end)
         # TODO: If the decoder raises, start doesn't get incremented.  So
         # there's nothing to do but bail out.
         break
