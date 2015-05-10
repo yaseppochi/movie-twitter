@@ -58,6 +58,7 @@ not_tweet_count = 0                     # Valid JSON object but not a tweet.
                                         # Eg, an "end connection" message.
 word_count = 0
 movie_count = 0
+key_errors = 0                          # Count of missing entity lists.
 
 # #### Combine these.
 tweet_movies = {}
@@ -82,11 +83,29 @@ while True:
         pruned['text'] = text = tweet['text']
         pruned['created_at'] = tweet['created_at']
         # Get any other relevant items here (URLs, hashtags, other?)
+        # Specifically:
+        # The text of the Tweet and some entity fields are considered for
+        # matches. Specifically, the text attribute of the Tweet, expanded_url
+        # and display_url for links and media, text for hashtags, and
+        # screen_name for user mentions are checked for matches.
         for k in optional_keys:
             # #### For dataset creation, probably should insert NULLs.
             if k in tweet:
                 pruned[k] = tweet[k]
         tweet_data[idno] = pruned
+        try:
+            entities = tweet['entities']
+            hash_text = " ".join(h['text'] for h in entities['hashtags'])
+            media_text = " ".join(m['expanded_url'] + " " + m['display_url']
+                                  for m in entities['media'])
+            url_text = " ".join(u['expanded_url'] + " " + u['display_url']
+                                for u in entities['urls'])
+            user_text = " ".join(u['screen_name']
+                                 for u in entities['user_mentions'])
+        except KeyError:
+            key_errors = key_errors + 1
+            hash_text = media_text = url_text = user_text = ""
+            
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
@@ -97,7 +116,7 @@ while True:
         found = True
         for w in movie_words[m]:
             word_count += 1
-            if not (w in text.lower()):
+            if not (w in " ".join([text, hash_text, media_text, url_text, user_text]).lower()):
                 found = False
                 break
         if found:
@@ -109,6 +128,7 @@ print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
 print("{0:d} words and ".format(word_count), end='')
 print("{0:d} movies matched.".format(movie_count))
+print("{0:d} missing entities were observed.".format(key_errors)
 idnos = sorted(tweet_movies.keys())
 for idno in idnos:
     print("{0:d} ".format(idno), end='')
