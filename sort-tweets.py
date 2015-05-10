@@ -10,7 +10,7 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
 from moviedata import MOVIES, PUNCT     # also STOPLIST when we get it
-from collections import Counter
+from collections import Counter, OrderedDict
 import argparse
 import json
 
@@ -30,7 +30,9 @@ start = start + 1                       # skip NL
 end = len(s)
 
 # Set parameters for data extraction.
-optional_keys = ['urls', 'hashtags', 'retweet_count', 'favorite_count', 'lang']
+entity_keys = ['urls', 'hashtags']
+retweet_keys = ['id', 'retweet_count']
+other_keys = ['favorite_count', 'lang']
 
 # Clean up movie names.
 # TODO: Remove stoplist words.
@@ -89,12 +91,12 @@ while True:
         # matches. Specifically, the text attribute of the Tweet, expanded_url
         # and display_url for links and media, text for hashtags, and
         # screen_name for user mentions are checked for matches.
-        for k in optional_keys:
-            # #### For dataset creation, probably should insert NULLs.
-            if k in tweet:
-                pruned[k] = tweet[k]
         tweet_data[idno] = pruned
         entities = tweet['entities']
+        for k in entity_keys:
+            # #### For dataset creation, probably should insert NULLs.
+            if k in entities:
+                pruned[k] = entities[k]
         hash_text = " ".join(h['text']
                              for h in entities['hashtags']) \
                     if 'hashtags' in entities else " "
@@ -107,6 +109,15 @@ while True:
         user_text = " ".join(u['screen_name']
                              for u in entities['user_mentions']) \
                     if 'user_mentions' in entities else " "
+        if 'retweeted_status' in tweet:
+            retweet = tweet['retweeted_status']
+            for k in retweet_keys:
+                if k in retweet:
+                    # This can overwrite the id from the tweet!
+                    pruned[k] = retweet[k]
+        for k in other_keys:
+            if k in tweet:
+                pruned[k] = tweet[k]
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
@@ -138,8 +149,8 @@ for idno in idnos:
     print(json.dumps(tweet_data[idno], indent=4))
 print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
-print(json.dumps(word_count, indent=4))
-print(json.dumps(movie_count, indent=4))
+print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
+print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
 print("{0:d} tweets and ".format(len(tweet_movies)), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
