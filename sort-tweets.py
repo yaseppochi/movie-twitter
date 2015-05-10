@@ -59,6 +59,7 @@ object_count = 0                        # If there is an error in the JSON
                                         # in output.
 not_tweet_count = 0                     # Valid JSON object but not a tweet.
                                         # Eg, an "end connection" message.
+duplicate_count = 0                     # Duplicated tweets.
 word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
@@ -91,6 +92,9 @@ while True:
         # matches. Specifically, the text attribute of the Tweet, expanded_url
         # and display_url for links and media, text for hashtags, and
         # screen_name for user mentions are checked for matches.
+        if idno in tweet_data:
+            print("{0:d} duplicate encountered.  Replacing.".format(idno))
+            duplicate_count = duplicate_count + 1
         tweet_data[idno] = pruned
         entities = tweet['entities']
         for k in entity_keys:
@@ -152,7 +156,8 @@ print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
-print("{0:d} tweets and ".format(len(tweet_movies)), end='')
+print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
+print("{0:d} duplicates, and".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
 print("{0:d} missing entities were observed.".format(key_errors))
