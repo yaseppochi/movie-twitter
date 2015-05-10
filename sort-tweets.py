@@ -57,7 +57,7 @@ object_count = 0                        # If there is an error in the JSON
                                         # in output.
 not_tweet_count = 0                     # Valid JSON object but not a tweet.
                                         # Eg, an "end connection" message.
-word_count = Counter                    # Word distribution.
+word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
 
