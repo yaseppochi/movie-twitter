@@ -128,7 +128,7 @@ print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
 print("{0:d} words and ".format(word_count), end='')
 print("{0:d} movies matched.".format(movie_count))
-print("{0:d} missing entities were observed.".format(key_errors)
+print("{0:d} missing entities were observed.".format(key_errors))
 idnos = sorted(tweet_movies.keys())
 for idno in idnos:
     print("{0:d} ".format(idno), end='')
