@@ -127,10 +127,11 @@ while True:
     for m in movies:
         found = True
         for w in movie_words[m]:
-            word_count[w] += 1
             if not (w in " ".join([text, hash_text, media_text, url_text, user_text]).lower()):
                 found = False
                 break
+            else:
+                word_count[w] += 1
         if found:
             movie_count[m] += 1
             tweet_movies[idno].append(m)
