@@ -93,19 +93,19 @@ while True:
             if k in tweet:
                 pruned[k] = tweet[k]
         tweet_data[idno] = pruned
-        try:
-            entities = tweet['entities']
-            hash_text = " ".join(h['text'] for h in entities['hashtags'])
-            media_text = " ".join(m['expanded_url'] + " " + m['display_url']
-                                  for m in entities['media'])
-            url_text = " ".join(u['expanded_url'] + " " + u['display_url']
-                                for u in entities['urls'])
-            user_text = " ".join(u['screen_name']
-                                 for u in entities['user_mentions'])
-        except KeyError:
-            key_errors = key_errors + 1
-            hash_text = media_text = url_text = user_text = ""
-            
+        entities = tweet['entities']
+        hash_text = " ".join(h['text']
+                             for h in entities['hashtags']) \
+                    if 'hashtags' in entities else " "
+        media_text = " ".join(m['expanded_url'] + " " + m['display_url']
+                              for m in entities['media'])
+                    if 'media' in entities else " "
+        url_text = " ".join(u['expanded_url'] + " " + u['display_url']
+                            for u in entities['urls'])
+                    if 'urls' in entities else " "
+        user_text = " ".join(u['screen_name']
+                             for u in entities['user_mentions'])
+                    if 'user_mentions' in entities else " "
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
