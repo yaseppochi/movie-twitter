@@ -123,12 +123,17 @@ while True:
             movie_count += 1
             tweet_movies[idno].append(m)
 
+mcnt = ncnt = 0
 idnos = sorted(tweet_movies.keys())
 for idno in idnos:
     print("{0:d} ".format(idno), end='')
-    for m in tweet_movies[idno]:
-        print('"{0}"'.format(m), end=' ')
-    print()
+    if tweet_movies[idno]:
+        mcnt = mcnt + 1
+        for m in tweet_movies[idno]:
+            print('"{0}"'.format(m), end=' ')
+            print()
+    else:
+        ncnt = ncnt + 1
     print(json.dumps(tweet_data[idno], indent=4))
 print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
@@ -138,3 +143,6 @@ print("{0:d} objects.".format(object_count))
 print("{0:d} words and ".format(word_count), end='')
 print("{0:d} movies matched.".format(movie_count))
 print("{0:d} missing entities were observed.".format(key_errors))
+print("len(idnos) = {0:d}.".format(len(idnos)))
+print("{0:d} tweets with identified movie(s).".format(mcnt))
+print("{0:d} tweets with no movie identified.".format(ncnt))  
