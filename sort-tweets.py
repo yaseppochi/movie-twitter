@@ -98,13 +98,13 @@ while True:
                              for h in entities['hashtags']) \
                     if 'hashtags' in entities else " "
         media_text = " ".join(m['expanded_url'] + " " + m['display_url']
-                              for m in entities['media'])
+                              for m in entities['media']) \
                     if 'media' in entities else " "
         url_text = " ".join(u['expanded_url'] + " " + u['display_url']
-                            for u in entities['urls'])
+                            for u in entities['urls']) \
                     if 'urls' in entities else " "
         user_text = " ".join(u['screen_name']
-                             for u in entities['user_mentions'])
+                             for u in entities['user_mentions']) \
                     if 'user_mentions' in entities else " "
     except KeyError:
         # We're missing essential data.  Try next tweet.
