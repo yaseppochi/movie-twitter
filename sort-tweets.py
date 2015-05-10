@@ -28,6 +28,9 @@ tweet, start = decoder.raw_decode(s)
 start = start + 1                       # skip NL
 end = len(s)
 
+# Set parameters for data extraction.
+optional_keys = ['urls', 'hashtags', 'retweet_count', 'favorite_count', 'lang']
+
 # Clean up movie names.
 # TODO: Remove stoplist words.
 movies = [m.translate(PUNCT) for m in MOVIES]
@@ -56,7 +59,9 @@ not_tweet_count = 0                     # Valid JSON object but not a tweet.
 word_count = 0
 movie_count = 0
 
+# #### Combine these.
 tweet_movies = {}
+tweet_data = {}
 while True:
     try:
         tweet, offset = decoder.raw_decode(s[start:start+50000])
@@ -72,9 +77,16 @@ while True:
         # there's nothing to do but bail out.
         break
     try:
-        idno = tweet['id']
-        text = tweet['text']
+        pruned = {}
+        pruned['id'] = idno = tweet['id']
+        pruned['text'] = text = tweet['text']
+        pruned['created_at'] = tweet['created_at']
         # Get any other relevant items here (URLs, hashtags, other?)
+        for k in optional_keys:
+            # #### For dataset creation, probably should insert NULLs.
+            if k in tweet:
+                pruned[k] = tweet[k]
+        tweet_data[idno] = pruned
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
@@ -103,5 +115,6 @@ for idno in idnos:
     for m in tweet_movies[idno]:
         print('"{0}"'.format(m), end=' ')
     print()
+    print(json.dumps(tweet_data[idno], indent=4)
 print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
