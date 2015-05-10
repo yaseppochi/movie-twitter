@@ -10,6 +10,7 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
 from moviedata import MOVIES, PUNCT     # also STOPLIST when we get it
+from collections import Counter
 import argparse
 import json
 
@@ -56,8 +57,8 @@ object_count = 0                        # If there is an error in the JSON
                                         # in output.
 not_tweet_count = 0                     # Valid JSON object but not a tweet.
                                         # Eg, an "end connection" message.
-word_count = 0
-movie_count = 0
+word_count = Counter                    # Word distribution.
+movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
 
 # #### Combine these.
@@ -115,12 +116,12 @@ while True:
     for m in movies:
         found = True
         for w in movie_words[m]:
-            word_count += 1
+            word_count[w] += 1
             if not (w in " ".join([text, hash_text, media_text, url_text, user_text]).lower()):
                 found = False
                 break
         if found:
-            movie_count += 1
+            movie_count[m] += 1
             tweet_movies[idno].append(m)
 
 mcnt = ncnt = 0
@@ -137,11 +138,11 @@ for idno in idnos:
     print(json.dumps(tweet_data[idno], indent=4))
 print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
+print(json.dumps(word_count, indent=4))
+print(json.dumps(movie_count, indent=4))
 print("{0:d} tweets and ".format(len(tweet_movies)), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
-print("{0:d} words and ".format(word_count), end='')
-print("{0:d} movies matched.".format(movie_count))
 print("{0:d} missing entities were observed.".format(key_errors))
 print("len(idnos) = {0:d}.".format(len(idnos)))
 print("{0:d} tweets with identified movie(s).".format(mcnt))
