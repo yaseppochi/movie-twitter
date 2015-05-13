@@ -8,6 +8,7 @@
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
 from myauth import get_my_api
+import http.client
 import json
 import os
 import os.path
