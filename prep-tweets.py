@@ -33,6 +33,8 @@ end = len(s)
 entity_keys = ['urls', 'hashtags']
 retweet_keys = ['id', 'retweet_count']
 other_keys = ['favorite_count', 'lang']
+location_keys = ['coordinates', 'geo', 'place',
+                 'user.location', 'user.time_zone']
 
 # Clean up movie names.
 # TODO: Remove stoplist words.
@@ -63,6 +65,7 @@ duplicate_count = 0                     # Duplicated tweets.
 word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
+location_count = Counter()
 
 # #### Combine these.
 tweet_movies = {}
@@ -92,6 +95,9 @@ while True:
         # matches. Specifically, the text attribute of the Tweet, expanded_url
         # and display_url for links and media, text for hashtags, and
         # screen_name for user mentions are checked for matches.
+        # Additional information to extract:
+        # Location: via coordinates, user.location, user.time_zone, geo, place,
+        #   urls?, and recurse into retweeted_status?
         if idno in tweet_data:
             print("{0:d} duplicate encountered.  Replacing.".format(idno))
             duplicate_count = duplicate_count + 1
@@ -122,6 +128,28 @@ while True:
         for k in other_keys:
             if k in tweet:
                 pruned[k] = tweet[k]
+        # #### Refactor this for efficiency!!
+        # #### Use this technique for retweet fields.
+        def extract_location(key, tweet):
+            keys = key.split(".")
+            result = tweet
+            for k in keys:
+                result = result.get(k)
+                if not result: break
+            return result
+        for k in location_keys:
+            result = extract_location(k, tweet)
+            if result:
+                location_count[k] += 1
+                pruned[k] = result
+        # #### Probably should collect retweet operations.
+        if 'retweeted_status' in tweet:
+            retweet = tweet['retweeted_status']
+            for k in location_keys:
+                result = extract_location(k, retweet)
+                if result:
+                    location_count["retweet." + k] += 1
+                    pruned["retweet." + k] = result
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
@@ -156,6 +184,7 @@ print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
+print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
