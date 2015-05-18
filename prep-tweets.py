@@ -152,7 +152,7 @@ while True:
                     location_count["retweet." + k] += 1
                     pruned["retweet." + k] = result
         lowered = text.lower()
-        for term in ['loved', 'movie']:
+        for term in ['loved', 'movie', 'home run', 'get home', 'got home']:
             if term in lowered:
                 valence_terms[term] += 1
     except KeyError:
