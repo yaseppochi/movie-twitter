@@ -30,6 +30,8 @@ start = start + 1                       # skip NL
 end = len(s)
 
 # Set parameters for data extraction.
+valence_terms = ['loved', 'movie', 'home run', 'get home', 'got home',
+                 'home movie', 'homemovie', 'liked', 'hated', "didn't like"]
 entity_keys = ['urls', 'hashtags']
 retweet_keys = ['id', 'retweet_count']
 other_keys = ['favorite_count', 'lang']
@@ -66,7 +68,7 @@ word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
 location_count = Counter()
-valence_terms = Counter()
+valence_count = Counter()
 
 # #### Combine these.
 tweet_movies = {}
@@ -152,9 +154,9 @@ while True:
                     location_count["retweet." + k] += 1
                     pruned["retweet." + k] = result
         lowered = text.lower()
-        for term in ['loved', 'movie', 'home run', 'get home', 'got home']:
+        for term in valence_terms:
             if term in lowered:
-                valence_terms[term] += 1
+                valence_count[term] += 1
     except KeyError:
         # We're missing essential data.  Try next tweet.
         not_tweet_count = not_tweet_count + 1
@@ -190,7 +192,7 @@ print(json.dumps(movie_words, indent=4))
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
-print(json.dumps(valence_terms, indent=4))
+print(json.dumps(valence_count, indent=4))
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
