@@ -286,7 +286,7 @@ for idno in idnos:
         ncnt = ncnt + 1
     print(json.dumps(tweet_data[idno].tweet, indent=4))
 
-print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARLITY\n")
+print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARITY\n")
 
 def clean_text(s):
     s = re.sub(r"(?i)(\bhttp://[-a-z0-9/?#,.]+[?/#]?\b|(^|\s)@\w+\b|\bRT\b):?",
