@@ -147,7 +147,7 @@ class TweetData(object):
         """
 
         words = self.tweet['text'].strip().lower().split()
-        words = { word in words if word not in self.stoplist }
+        words = { word for word in words if not word in TwitterData.stoplist }
         self.words = sorted(words)
         
     def _collect_entity_text(self, status):
