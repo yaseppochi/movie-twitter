@@ -13,6 +13,7 @@ from moviedata import MOVIES, PUNCT     # also STOPLIST when we get it
 from collections import Counter, OrderedDict
 import argparse
 import json
+import re
 
 # Set up the input file.  STREAM refers to future use with Twitter API.
 parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
@@ -68,6 +69,9 @@ movie_count = Counter()                 # Movie distribution.
 key_errors = 0                          # Count of missing entity lists.
 location_count = Counter()
 terms_count = Counter()
+badlang_count = 0
+should_match = []
+should_not_match = []
 
 # #### Combine these.
 tweet_movies = {}
@@ -93,13 +97,14 @@ class TweetData(object):
     general_keys.extend(required_keys)
     entity_keys = ['urls', 'hashtags']
     retweet_keys = ['retweet_count']
-    reportable_keys = ['coordinates', 'geo', 'place',
+    location_keys = ['coordinates', 'geo', 'place',
                        'user.location', 'user.time_zone']
     def __init__(self, status):
         self.tweet = {}
         self._collect_attrs(self.tweet, status)
         self._filter()
         self._collect_entity_text(status)
+        self._collect_miscellaneous(status)
         self._canonicalize_text()
         self.all_words = sorted(set(self.words + self.entity_words))
 
@@ -107,16 +112,21 @@ class TweetData(object):
         """
         Raise a SamplingException on a tweet that is out of sample.
         """
-        # #### Are there 3-letter RFC 3166 codes starting with "en"?
-        if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
-            print(self.tweet['text'])
-            raise BadLangException(self.tweet['lang'])
+        # #### These exceptions are probably mutually exclusive, but if not
+        # we interpret BadLang as applying only to valid tweets.
+        global key_errors, badlang_count
         for k in self.required_keys:
             missing = []
             if self.tweet[k] is None:
                 missing.append(k)
             if missing:
+                key_errors += 1
                 raise MissingRequiredKeyException(missing)
+        # #### Are there 3-letter RFC 3166 codes starting with "en"?
+        if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
+            print(self.tweet['text'][:78])
+            badlang_count += 1
+            raise BadLangException(self.tweet['lang'])
 
     # The tweet argument allows recursion for retweets.
     def _collect_attrs(self, tweet, status):
@@ -146,9 +156,18 @@ class TweetData(object):
         5. Sort the list.
         """
 
-        words = self.tweet['text'].strip().lower().split()
-        words = { word for word in words if not word in TweetData.stoplist }
-        self.words = sorted(words)
+        words = re.split(r"(\s|[-/._?#;:,']|http://)+",
+                         self.tweet['text'].lower())
+        for word in words[::2]:
+            if re.match(r"(\s|[-/._?#;:,']|http://)+", word):
+                should_not_match.append(word)
+        for word in words[1::2]:
+            if not re.match(r"(\s|[-/._?#;:,']|http://)+", word):
+                should_match.append(word)
+        words = { word.strip() for word in words[::2] }
+        self.words = [ word for word in words
+                       if word and word not in TweetData.stoplist ]
+        self.words.sort()
         
     def _collect_entity_text(self, status):
         entities = status['entities']
@@ -168,10 +187,39 @@ class TweetData(object):
         # as well as English word boundaries.
         words = " ".join([self.hash_text, self.media_text, self.url_text,
                           self.user_text]) \
-                   .lower().split(r"(\s|[/._-?#;,])+")
-        # Eliminate duplicates and sort.
-        self.entity_words = sorted(set(words))
+                   .lower()
+        # Split, eliminate duplicates, and sort.
+        words = [ word.strip() for word
+                  in re.split(r"(\s|[-:/._?#;,']|http://)+", words)][::2]
+        self.entity_words = sorted(set(word for word in words if word))
 
+    def _collect_miscellaneous(self, status):
+        # #### Refactor this for efficiency!!
+        # #### Use this technique for retweet fields.
+        def extract_location(key, tweet):
+            keys = key.split(".")
+            result = tweet
+            for k in keys:
+                result = result.get(k)
+                if not result: break
+            return result
+        for k in TweetData.location_keys:
+            result = extract_location(k, status)
+            if result:
+                location_count[k] += 1
+                self.tweet[k] = result
+        # #### Probably should collect retweet operations.
+        if 'retweeted_status' in status:
+            retweet = status['retweeted_status']
+            for k in TweetData.location_keys:
+                result = extract_location(k, retweet)
+                if result:
+                    location_count["retweet." + k] += 1
+                    # #### Flatten retweet attributes.
+                    self.tweet["retweet"][k] = result
+
+
+print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
 while True:
     try:
@@ -183,7 +231,7 @@ while True:
         # since we bail out in any case.
         # print("Error:", e)
         # print("|", s[start:start+100])
-        print("next = ", start, "end =", end)
+        print("\nnext = ", start, "end =", end, "\n")
         # TODO: If the decoder raises, start doesn't get incremented.  So
         # there's nothing to do but bail out.
         break
@@ -215,6 +263,7 @@ while True:
             movie_count[m] += 1
             tweet_movies[idno].append(m)
 
+print("TWEET DATA SORTED BY id\n")
 mcnt = ncnt = 0
 idnos = sorted(tweet_movies.keys())
 for idno in idnos:
@@ -236,7 +285,10 @@ print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
-print("{0:d} missing entities were observed.".format(key_errors))
+print("{0:d} missing entities found.".format(key_errors))
+print("{0:d} tweets with non-English lang found".format(badlang_count))
 print("len(idnos) = {0:d}.".format(len(idnos)))
 print("{0:d} tweets with identified movie(s).".format(mcnt))
 print("{0:d} tweets with no movie identified.".format(ncnt))  
+print("should have matched while splitting: {}".format(should_match))
+print("should not have matched while splitting: {}".format(should_not_match))
