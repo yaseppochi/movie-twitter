@@ -171,28 +171,31 @@ class TweetData(object):
         self.words.sort()
         
     def _collect_entity_text(self, status):
-        entities = status['entities']
-        self.hash_text = " ".join(h['text']
-                                  for h in entities['hashtags']) \
-                         if 'hashtags' in entities else ""
-        self.media_text = " ".join(m['expanded_url'] + " " + m['display_url']
-                                   for m in entities['media']) \
-                          if 'media' in entities else ""
-        self.url_text = " ".join(u['expanded_url'] + " " + u['display_url']
-                                 for u in entities['urls']) \
-                        if 'urls' in entities else ""
-        self.user_text = " ".join(u['screen_name']
+        if 'entities' in status:
+            entities = status['entities']
+            self.hash_text = " ".join(h['text']
+                                      for h in entities['hashtags']) \
+                             if 'hashtags' in entities else ""
+            self.media_text = " ".join(m['expanded_url'] + " "
+                                       + m['display_url']
+                                       for m in entities['media']) \
+                              if 'media' in entities else ""
+            self.url_text = " ".join(u['expanded_url'] + " " + u['display_url']
+                                     for u in entities['urls']) \
+                            if 'urls' in entities else ""
+            self.user_text = " ".join(u['screen_name']
                                   for u in entities['user_mentions']) \
-                         if 'user_mentions' in entities else ""
-        # Split the concatenation of texts on URL segment boundaries
-        # as well as English word boundaries.
-        words = " ".join([self.hash_text, self.media_text, self.url_text,
-                          self.user_text]) \
-                   .lower()
-        # Split, eliminate duplicates, and sort.
-        words = [ word.strip() for word
-                  in re.split(r"(\s|[-:/._?#;,']|http://)+", words)][::2]
-        self.entity_words = sorted(set(word for word in words if word))
+                             if 'user_mentions' in entities else ""
+            # Split the concatenation of texts on URL segment boundaries
+            # as well as English word boundaries.
+            words = " ".join([self.hash_text, self.media_text, self.url_text,
+                              self.user_text]).lower()
+            # Split, eliminate duplicates, and sort.
+            words = [ word.strip() for word
+                      in re.split(r"(\s|[-:/._?#;,']|http://)+", words)][::2]
+            self.entity_words = sorted(set(word for word in words if word))
+        else:
+            self.entity_words = []
 
     def _collect_miscellaneous(self, status):
         # #### Refactor this for efficiency!!
