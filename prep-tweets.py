@@ -97,7 +97,7 @@ class TweetData(object):
                        'user.location', 'user.time_zone']
     def __init__(self, status):
         self.tweet = {}
-        self._collect_attrs(self, self.tweet, status)
+        self._collect_attrs(self.tweet, status)
         self._filter()
         self._collect_entity_text(status)
         self._canonicalize_text()
@@ -163,11 +163,11 @@ class TweetData(object):
         self.user_text = " ".join(u['screen_name']
                                   for u in entities['user_mentions']) \
                          if 'user_mentions' in entities else ""
+        # Split the concatenation of texts on URL segment boundaries
+        # as well as English word boundaries.
         words = " ".join([self.hash_text, self.media_text, self.url_text,
-                          self.user_text]).lower() \
-                # Split the concatenation of texts on URL segment
-                # boundaries as well as English word boundaries.
-                .split(r"(\s|[/._-?#;,])+")
+                          self.user_text]) \
+                   .lower().split(r"(\s|[/._-?#;,])+")
         # Eliminate duplicates and sort.
         self.entity_words = sorted(set(words))
 
