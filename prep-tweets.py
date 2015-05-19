@@ -66,7 +66,7 @@ not_tweet_count = 0                     # Valid JSON object but not a tweet.
 duplicate_count = 0                     # Duplicated tweets.
 word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
-key_errors = 0                          # Count of missing entity lists.
+required_missing_count = 0              # Count of missing entity lists.
 location_count = Counter()
 terms_count = Counter()
 badlang_count = 0
@@ -114,14 +114,14 @@ class TweetData(object):
         """
         # #### These exceptions are probably mutually exclusive, but if not
         # we interpret BadLang as applying only to valid tweets.
-        global key_errors, badlang_count
+        global required_missing_count, badlang_count
+        missing = []
         for k in self.required_keys:
-            missing = []
             if self.tweet[k] is None:
                 missing.append(k)
-            if missing:
-                key_errors += 1
-                raise MissingRequiredKeyException(missing)
+        if missing:
+            required_missing_count += 1
+            raise MissingRequiredKeyException(missing)
         # #### Are there 3-letter RFC 3166 codes starting with "en"?
         if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
             print(self.tweet['text'][:78])
@@ -241,15 +241,14 @@ while True:
         idno = tweet.tweet['id']
         if idno in tweet_data:
             print("{0:d} duplicate encountered, replacing.".format(idno))
-            duplicate_count = duplicate_count + 1
+            duplicate_count += 1
         tweet_data[idno] = tweet
         for term in reportable_terms:
             if term in tweet.all_words:
                 terms_count[term] += 1
-    # #### Maybe we should report details?
     except (KeyError, SamplingException):
         # We're missing essential data.  Try next tweet.
-        not_tweet_count = not_tweet_count + 1
+        not_tweet_count += 1
         continue
 
     tweet_movies[idno] = []
@@ -286,7 +285,7 @@ print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
 print("{0:d} objects.".format(object_count))
-print("{0:d} missing entities found.".format(key_errors))
+print("{0:d} missing attributes found.".format(required_missing_count))
 print("{0:d} tweets with non-English lang found".format(badlang_count))
 print("len(idnos) = {0:d}.".format(len(idnos)))
 print("{0:d} tweets with identified movie(s).".format(mcnt))
