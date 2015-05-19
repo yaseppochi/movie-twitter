@@ -89,8 +89,8 @@ class TweetData(object):
 
     stoplist = ["a", "an", "the", "some", "to", "from", "for", "with"]
     required_keys = ['id','text', 'created_at']
-    general_keys = ['timestamp_ms', 'lang', 'favorite_count'] \
-                   .extend(required_keys)
+    general_keys = ['timestamp_ms', 'lang', 'favorite_count']
+    general_keys.extend(required_keys)
     entity_keys = ['urls', 'hashtags']
     retweet_keys = ['retweet_count']
     reportable_keys = ['coordinates', 'geo', 'place',
@@ -151,6 +151,7 @@ class TweetData(object):
         self.words = sorted(words)
         
     def _collect_entity_text(self, status):
+        entities = status['entities']
         self.hash_text = " ".join(h['text']
                                   for h in entities['hashtags']) \
                          if 'hashtags' in entities else ""
@@ -188,10 +189,11 @@ while True:
         break
     try:
         tweet = TweetData(status)
-        if tweet['id'] in tweet_data:
+        idno = tweet.tweet['id']
+        if idno in tweet_data:
             print("{0:d} duplicate encountered, replacing.".format(idno))
             duplicate_count = duplicate_count + 1
-        tweet_data[tweet['id']] = tweet
+        tweet_data[idno] = tweet
         for term in reportable_terms:
             if term in tweet.all_words:
                 terms_count[term] += 1
