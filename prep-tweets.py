@@ -220,7 +220,7 @@ class TweetData(object):
                 if result:
                     location_count["retweet." + k] += 1
                     # #### Flatten retweet attributes.
-                    self.tweet["retweet"][k] = result
+                    self.tweet['original'][k] = result
 
 
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
