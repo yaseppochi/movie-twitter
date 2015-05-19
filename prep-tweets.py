@@ -75,6 +75,7 @@ should_not_match = []
 
 # #### Combine these.
 tweet_movies = {}
+movie_tweets = {}
 tweet_data = {}
 
 class SamplingException(Exception):
@@ -264,7 +265,13 @@ while True:
                 word_count[w] += 1
         if found:
             movie_count[m] += 1
+            # #### movie_tweets should be a DefaultDict
+            if m in movie_tweets:
+                movie_tweets[m].append(tweet)
+            else:
+                movie_tweets[m] = [tweet]
             tweet_movies[idno].append(m)
+
 
 print("TWEET DATA SORTED BY id\n")
 mcnt = ncnt = 0
@@ -278,6 +285,23 @@ for idno in idnos:
     else:
         ncnt = ncnt + 1
     print(json.dumps(tweet_data[idno].tweet, indent=4))
+
+print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARLITY\n")
+
+def clean_text(s):
+    s = re.sub(r"(?i)(\bhttp://[-a-z0-9/?#,.]+[?/#]?\b|(^|\s)@\w+\b|\bRT\b):?",
+               " ", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
+for m in movie_tweets.keys():
+    tweets = [t for t in movie_tweets[m] if t.words]
+    tweets.sort(key=lambda t: t.words)
+    print("{0:s} ({1:d}, {2:d}):".format(m, len(movie_tweets[m]), len(tweets)))
+    for t in tweets:
+        print("{0:-18d} {1:s}".format(t.tweet['id'],
+                                      clean_text(t.tweet['text'])))
+
 print(json.dumps(word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
