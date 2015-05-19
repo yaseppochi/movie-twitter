@@ -132,16 +132,17 @@ class TweetData(object):
     def _collect_attrs(self, tweet, status):
         for k in TweetData.general_keys:
             tweet[k] = status[k] if k in status else None
-        entities = status['entities']
-        for k in TweetData.entity_keys:
-            tweet[k] = entities[k] if k in entities else None
-        if 'retweeted_status' in tweet:
-            original = tweet['retweeted_status']
-            retweeted = {}
+        if 'entities' in status:
+            entities = status['entities']
+            for k in TweetData.entity_keys:
+                tweet[k] = entities[k] if k in entities else None
+        if 'retweeted_status' in status:
+            original = status['retweeted_status']
+            working = {}
+            self._collect_attrs(working, original)
             for k in TweetData.retweet_keys:
-                retweeted[k] = original[k] if k in original else None
-            self._collect_attrs(retweeted, original)
-            self.tweet['original'] = retweeted
+                working[k] = original[k] if k in original else None
+            self.tweet['original'] = working
         else:
             tweet['original'] = None
 
