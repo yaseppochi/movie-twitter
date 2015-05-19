@@ -120,15 +120,15 @@ class TweetData(object):
 
     # The tweet argument allows recursion for retweets.
     def _collect_attrs(self, tweet, status):
-        for k in self.general_keys:
+        for k in TweetData.general_keys:
             tweet[k] = status[k] if k in status else None
         entities = status['entities']
-        for k in self.entity_keys:
+        for k in TweetData.entity_keys:
             tweet[k] = entities[k] if k in entities else None
         if 'retweeted_status' in tweet:
             original = tweet['retweeted_status']
             retweeted = {}
-            for k in self.retweet_keys:
+            for k in TweetData.retweet_keys:
                 retweeted[k] = original[k] if k in original else None
             self._collect_attrs(retweeted, original)
             self.tweet['original'] = retweeted
@@ -147,7 +147,7 @@ class TweetData(object):
         """
 
         words = self.tweet['text'].strip().lower().split()
-        words = { word for word in words if not word in TwitterData.stoplist }
+        words = { word for word in words if not word in TweetData.stoplist }
         self.words = sorted(words)
         
     def _collect_entity_text(self, status):
