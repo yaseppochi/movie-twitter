@@ -31,9 +31,10 @@ start = start + 1                       # skip NL
 end = len(s)
 
 # Set parameters for data extraction.
-valence_terms = ['loved', 'movie', 'home run', 'get home', 'got home',
-                 'home movie', 'homemovie', 'liked', 'hated', "didn't like"]
-filter_in_terms = ['movie']
+valence_terms = ['loved', 'movie', 'home run', 'get home', 'got home', 'fun',
+                 'home movie', 'homemovie', 'liked', 'hated', "didn't like",
+                 'entertainment']
+filter_in_terms = ['movie', 'release', 'go to', 'see', ]
 filter_out_terms = ['home run', 'get home', 'got home', 'home movie',
                     'homemovie', 'realtor', 'realty', 'real estate']
 reportable_terms = valence_terms + filter_in_terms + filter_out_terms
