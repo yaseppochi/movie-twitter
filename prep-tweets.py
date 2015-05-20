@@ -9,7 +9,7 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # You can ignore comments beginning with "TODO:".
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
-from moviedata import MOVIES, PUNCT     # also STOPLIST when we get it
+from moviedata import MOVIES, PUNCT, STOPLIST
 from collections import Counter, OrderedDict
 import argparse
 import json
@@ -92,7 +92,7 @@ class TweetData(object):
     Collect relevant data from a status and prepare it for analysis.
     """
 
-    stoplist = ["a", "an", "the", "some", "to", "from", "for", "with"]
+    stoplist = STOPLIST
     required_keys = ['id','text', 'created_at']
     general_keys = ['timestamp_ms', 'lang', 'favorite_count']
     general_keys.extend(required_keys)
