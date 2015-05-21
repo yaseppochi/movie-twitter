@@ -31,10 +31,9 @@ start = start + 1                       # skip NL
 end = len(s)
 
 # Set parameters for data extraction.
-valence_terms = ['loved', 'movie', 'home run', 'get home', 'got home', 'fun',
-                 'home movie', 'homemovie', 'liked', 'hated', "didn't like",
-                 'entertainment']
-filter_in_terms = ['movie', 'release', 'go to', 'see', ]
+valence_terms = ['loved', 'fun', 'like', 'hated', "loved", "liked", "good",
+                 "best", 'entertainment', "must watch", "amazing", "thank"]
+filter_in_terms = ['movie', 'release', 'go to', 'see']
 filter_out_terms = ['home run', 'get home', 'got home', 'home movie',
                     'homemovie', 'realtor', 'realty', 'real estate']
 reportable_terms = valence_terms + filter_in_terms + filter_out_terms
@@ -73,6 +72,19 @@ terms_count = Counter()
 badlang_count = 0
 should_match = []
 should_not_match = []
+
+# Compute the distribution of words.
+# This is not the number of times a word occurs in the corpus, but rather
+# the number of tweets using the word.
+# The tweet text is cleaned.  First, URLs (which are usually meaningless in
+# the text) are replaced with the symbol <URL>.  Second, user mentions are
+# replaced with the symbol @USER.  Third, hashtags are counted twice: once
+# as the hashtag, and once as the word without the hash.
+
+# #### word_distribution = Counter()
+
+# #### DON'T FORGET THE RECURSIVE DESCENT INTO ALL DATA.
+# #### ALSO NEED TO COMPUTE WEEK BOUNDARIES.
 
 # #### Combine these.
 tweet_movies = {}
@@ -248,8 +260,9 @@ while True:
             print("{0:d} duplicate encountered, replacing.".format(idno))
             duplicate_count += 1
         tweet_data[idno] = tweet
+        # #### This really should be a regexp match.
         for term in reportable_terms:
-            if term in tweet.all_words:
+            if term in tweet.tweet['text']:
                 terms_count[term] += 1
     except (KeyError, SamplingException):
         # We're missing essential data.  Try next tweet.
