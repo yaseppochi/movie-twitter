@@ -31,7 +31,7 @@ start = start + 1                       # skip NL
 end = len(s)
 
 # Set parameters for data extraction.
-valence_terms = ['loved', 'fun', 'like', 'hated', "loved", "liked", "good",
+valence_terms = ['loved', 'fun', 'like', 'hated', "love", "liked", "good",
                  "best", 'entertainment', "must watch", "amazing", "thank",
                  "must see"]
 filter_in_terms = ['movie', 'release', 'go to', 'see']
