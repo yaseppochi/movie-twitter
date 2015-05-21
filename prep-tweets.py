@@ -32,7 +32,8 @@ end = len(s)
 
 # Set parameters for data extraction.
 valence_terms = ['loved', 'fun', 'like', 'hated', "loved", "liked", "good",
-                 "best", 'entertainment', "must watch", "amazing", "thank"]
+                 "best", 'entertainment', "must watch", "amazing", "thank",
+                 "must see"]
 filter_in_terms = ['movie', 'release', 'go to', 'see']
 filter_out_terms = ['home run', 'get home', 'got home', 'home movie',
                     'homemovie', 'realtor', 'realty', 'real estate']
