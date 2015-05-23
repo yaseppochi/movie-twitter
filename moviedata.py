@@ -184,8 +184,6 @@ DATES_MOVIES = [ # "movie",
      "Results"],
     ]
 
-MOVIES = list(itertools.chain.from_iterable(m[1:] for m in DATES_MOVIES))
-
 STOPLIST = ["a", "an", "the", "some", "to", "from", "for", "with"]
 
 PUNCT = { ord(',') : None,
@@ -287,6 +285,7 @@ class Movie(object):
     """
 
     by_name = {}
+    word_movies = {}
 
     # #### The optional arguments arguably are useless.
     def __init__(self, name, opening_date=None, star_list=None):
@@ -296,6 +295,7 @@ class Movie(object):
         if name in Movie.by_name:
              raise DuplicateNameError(name)
         Movie.by_name[name] = self
+        self._compute_word_movie_maps()
 
     @classmethod
     def _get_by_name(cls, name):
@@ -325,8 +325,21 @@ class Movie(object):
         else:
             s = " no stars"
         return "{0} Opened: {1} Stars:{2}".format(self.name,
-                                                 self.opening_date,
-                                                 s)
+                                                  self.opening_date,
+                                                  s)
+
+    # Compute word->movie and movie->word maps.
+    # Note that string "in" operator is case-sensitive, so we lowercase all words.
+    # Movie names are not searched for directly so they don't need lowercasing.
+    def _compute_word_movie_maps(self):
+        self.words = [w.lower() for w in self.name.translate(PUNCT).split()]
+        for w in self.words:
+            # #### Use DefaultDict.
+            wm = Movie.word_movies
+            if w in wm:
+                wm[w].append(self)
+            else:
+                wm[w] = [self]
 
 
 def populate_movie_list(dates, stars):
@@ -339,8 +352,9 @@ def populate_movie_list(dates, stars):
         m = Movie._get_by_name(elt[0])
         m._add_star_list(elt[1:])
 
+populate_movie_list(DATES_MOVIES, MOVIES_STARS)
+
 
 if __name__ == "__main__":
-    populate_movie_list(DATES_MOVIES, MOVIES_STARS)
-    for m in iter(Movie.by_name.values()):
+    for m in Movie.by_name.values():
         print(m)

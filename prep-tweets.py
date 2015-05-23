@@ -9,7 +9,7 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # You can ignore comments beginning with "TODO:".
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
-from moviedata import MOVIES, PUNCT, STOPLIST
+import moviedata
 from collections import Counter, OrderedDict
 import argparse
 import json
@@ -39,22 +39,6 @@ filter_out_terms = ['home run', 'get home', 'got home', 'home movie',
                     'homemovie', 'realtor', 'realty', 'real estate']
 reportable_terms = valence_terms + filter_in_terms + filter_out_terms
 
-# Clean up movie names.
-# TODO: Remove stoplist words.
-movies = [m.translate(PUNCT) for m in MOVIES]
-
-# Compute word->movie and movie->word maps.
-# Note that string "in" operator is case-sensitive, so we lowercase all words.
-# Movie names are not searched for directly so they don't need lowercasing.
-movie_words = {}
-word_movies = {}
-for m in movies:
-    movie_words[m] = [w.lower() for w in m.split()]
-    for w in movie_words[m]:
-        if w in word_movies:
-            word_movies[w].append(m)
-        else:
-            word_movies[w] = [m]
 
 # Accumulate some statistics about the file.
 object_count = 0                        # If there is an error in the JSON
@@ -82,7 +66,7 @@ should_not_match = []
 # replaced with the symbol @USER.  Third, hashtags are counted twice: once
 # as the hashtag, and once as the word without the hash.
 
-# #### word_distribution = Counter()
+#### word_distribution = Counter()
 
 # #### DON'T FORGET THE RECURSIVE DESCENT INTO ALL DATA.
 # #### ALSO NEED TO COMPUTE WEEK BOUNDARIES.
@@ -106,14 +90,14 @@ class TweetData(object):
     Collect relevant data from a status and prepare it for analysis.
     """
 
-    stoplist = STOPLIST
+    stoplist = moviedata.STOPLIST
     required_keys = ['id','text', 'created_at']
     general_keys = ['timestamp_ms', 'lang', 'favorite_count']
     general_keys.extend(required_keys)
     entity_keys = ['urls', 'hashtags']
     retweet_keys = ['retweet_count']
     location_keys = ['coordinates', 'geo', 'place',
-                       'user.location', 'user.time_zone']
+                     'user.location', 'user.time_zone']
     def __init__(self, status):
         self.tweet = {}
         self._collect_attrs(self.tweet, status)
@@ -271,9 +255,9 @@ while True:
         continue
 
     tweet_movies[idno] = []
-    for m in movies:
+    for m in moviedata.Movie.by_name.values():
         found = True
-        for w in movie_words[m]:
+        for w in m.words:
             if w not in tweet.all_words:
                 found = False
             else:
@@ -317,7 +301,7 @@ for m in movie_tweets.keys():
         print("{0:-18d} {1:s}".format(t.tweet['id'],
                                       clean_text(t.tweet['text'])))
 
-print(json.dumps(word_movies, indent=4))
+print(json.dumps(moviedata.Movie.word_movies, indent=4))
 print(json.dumps(movie_words, indent=4))
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
