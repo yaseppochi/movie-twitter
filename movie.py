@@ -1,3 +1,4 @@
+import datetime
 import moviedata
 
 class MovieException(Exception):
@@ -74,6 +75,10 @@ class Movie(object):
                 wm[w].append(self)
             else:
                 wm[w] = [self]
+
+    def timestamp_to_week(self, time, _week=datetime.timedelta(7)):
+        return (datetime.datetime.fromtimestamp(time/1000, moviedata.nytime)
+                - self.opening_date) // _week
 
 
 def populate_movie_list(dates, stars):

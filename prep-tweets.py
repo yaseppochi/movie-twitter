@@ -92,8 +92,9 @@ class TweetData(object):
     """
 
     stoplist = moviedata.STOPLIST
+    str_int_keys = ['timestamp_ms']
     required_keys = ['id','text', 'created_at']
-    general_keys = ['timestamp_ms', 'lang', 'favorite_count']
+    general_keys = ['lang', 'favorite_count']
     general_keys.extend(required_keys)
     entity_keys = ['urls', 'hashtags']
     retweet_keys = ['retweet_count']
@@ -131,7 +132,11 @@ class TweetData(object):
     # The tweet argument allows recursion for retweets.
     def _collect_attrs(self, tweet, status):
         for k in TweetData.general_keys:
+            # #### Use status.get(k) here.
             tweet[k] = status[k] if k in status else None
+        for k in TweetData.str_int_keys:
+            # Can't use .get() here!
+            tweet[k] = int(status[k]) if k in status else None
         if 'entities' in status:
             entities = status['entities']
             for k in TweetData.entity_keys:
@@ -301,8 +306,9 @@ for m in movie_tweets.keys():
                                          len(movie_tweets[m]),
                                          len(tweets)))
     for t in tweets:
-        print("{0:-18d} {1:s}".format(t.tweet['id'],
-                                      clean_text(t.tweet['text'])))
+        print("{0:-18d} week={1:d} {2:s}".format(t.tweet['id'],
+                                                 m.timestamp_to_week(t.tweet['timestamp_ms']),
+                                                 clean_text(t.tweet['text'])))
 
 # Need to define a special encoder.
 # print(json.dumps(movie.Movie.word_movies, indent=4))
