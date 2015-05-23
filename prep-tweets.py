@@ -9,10 +9,11 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # You can ignore comments beginning with "TODO:".
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
-import moviedata
 from collections import Counter, OrderedDict
 import argparse
 import json
+import movie
+import moviedata
 import re
 
 # Set up the input file.  STREAM refers to future use with Twitter API.
@@ -255,7 +256,7 @@ while True:
         continue
 
     tweet_movies[idno] = []
-    for m in moviedata.Movie.by_name.values():
+    for m in movie.Movie.by_name.values():
         found = True
         for w in m.words:
             if w not in tweet.all_words:
@@ -296,15 +297,32 @@ def clean_text(s):
 for m in movie_tweets.keys():
     tweets = [t for t in movie_tweets[m] if t.words]
     tweets.sort(key=lambda t: t.words)
-    print("{0:s} ({1:d}, {2:d}):".format(m, len(movie_tweets[m]), len(tweets)))
+    print("{0:s} ({1:d}, {2:d}):".format(m.name,
+                                         len(movie_tweets[m]),
+                                         len(tweets)))
     for t in tweets:
         print("{0:-18d} {1:s}".format(t.tweet['id'],
                                       clean_text(t.tweet['text'])))
 
-print(json.dumps(moviedata.Movie.word_movies, indent=4))
-print(json.dumps(movie_words, indent=4))
+# Need to define a special encoder.
+# print(json.dumps(movie.Movie.word_movies, indent=4))
+print("{")
+for w, l in movie.Movie.word_movies.items():
+    print("    ", w, " : [", sep="")
+    for m in l:
+        print("        ", m.name, ",", sep="")
+    print("        ]")
+print("}")
+# Need to define a special encoder.
+# print(json.dumps(movie_words, indent=4))
+print("{")
+for n, m in movie.Movie.by_name.items():
+    print("   ", n, ": [ ", end="")
+    print(*m.words, sep=", ", end=" ]\n")
+print("}")
 print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
-print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
+# Need to define a special encoder.
+# print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
 print(json.dumps(terms_count, indent=4))
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
