@@ -350,7 +350,7 @@ for m in movie_tweets.keys():
     for t in tweets:
         print(fmt.format(t.tweet['id'],
                          m.timestamp_to_week(t.timestamp),
-                         clean_text(t.text)))
+                         t.text))
 
 # Need to define a special encoder.
 # print(json.dumps(movie.Movie.word_movies, indent=4))
