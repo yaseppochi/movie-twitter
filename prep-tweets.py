@@ -375,7 +375,7 @@ print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
 print(json.dumps(terms_count, indent=4))
 files = [f for f in traverse_tweet_data(".")]
 #print(files)
-print("There are", len(files), "in the database.")
+print("There are", len(files), "output files in the database.")
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
