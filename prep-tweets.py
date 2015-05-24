@@ -16,30 +16,29 @@ import movie
 import moviedata
 import os
 import os.path
+import pytz
 import re
-
-def clean_text(s):
-    s = s.lower()
-    s = re.sub(r"\bhttp://[-a-z0-9/?#,.]+\b[?/#:]*", " URL ", s)
-    s = re.sub(r"\b@\w+\b:?", " @USER ", s)
-    s = re.sub(r"\bRT\b:?", " ", s)
-    s = re.sub(r"\s+", " ", s)
-    return s.strip()
+import sys
 
 # Set up the input file.  STREAM refers to future use with Twitter API.
 parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
-parser.add_argument('STREAM', type=str, help="File of JSON tweets")
+parser.add_argument('FILES', type=str, help="Files of JSON tweets", nargs='*')
+parser.add_argument('--dataroot', type=str, help="Data root directory")
 args = parser.parse_args()
-with open(args.STREAM) as stream:       # TODO: Need to handle Twitter API too.
-    s = stream.read()                   # TODO: Need online algorithm.
+
+def traverse_tweet_data(root):
+    return (os.path.join(root, "results", stamp, json)
+            for stamp in os.listdir(os.path.join(root, "results"))
+            for json in os.listdir(os.path.join(root, "results", stamp))
+            if json.endswith(".json"))
+
+if not args.FILES:
+    files = traverse_tweet_data(root)
+else:
+    files = args.FILES
 
 # Set up the JSON decoder.
 decoder = json.JSONDecoder()
-
-# Get the first tweet, the start of the next tweet, and total size of file.
-tweet, start = decoder.raw_decode(s)
-start = start + 1                       # skip NL
-end = len(s)
 
 # Set parameters for data extraction.
 valence_terms = ['loved', 'fun', 'like', 'hated', "love", "liked", "good",
@@ -79,6 +78,8 @@ should_not_match = []
 
 word_distribution = Counter()
 
+limit_count = Counter()
+
 # #### DON'T FORGET THE RECURSIVE DESCENT INTO ALL DATA.
 # #### ALSO NEED TO COMPUTE WEEK BOUNDARIES.
 
@@ -116,6 +117,7 @@ class TweetData(object):
         self._filter()
         self._collect_entity_text(status)
         self._collect_miscellaneous(status)
+        self._clean_text()
         self._canonicalize_text()
         self.all_words = sorted(set(self.words + self.entity_words))
 
@@ -159,30 +161,39 @@ class TweetData(object):
                 working[k] = original[k] if k in original else None
             self.tweet['original'] = working
         else:
-            tweet['original'] = None
+            self.tweet['original'] = None
+        self.timestamp = int(status['timestamp_ms'])/1000
+
+    def _clean_text(self):
+        """
+        Canonicalize the text of the tweet into text.
+        Algorithm:
+        1. Lowercase the text.
+        2. Replace certain patterns with uppercase symbols.
+        3. Split into list of words (on whitespace).
+        4. Strip the text (probably unnecessary).
+        """
+
+        if hasattr(self, 'text'):
+            return
+        s = self.tweet['text'].lower()
+        s = re.sub(r"\bhttps?://[-a-z0-9/?#,.]+", " URL ", s)
+        s = re.sub(r"[^\u0000-\u00ff]+", " \0 ", s)
+        s = re.sub(r"@\w+\b", " @USER ", s)
+        # #### This could mean "rewteet", but it could be "round trip", too.
+        # s = re.sub(r"\bRT\b:?", " ", s)
+        s = re.sub(r"\s+", " ", s)
+        self.text = s.strip()
 
     def _canonicalize_text(self):
         """
-        Canonicalize the text of the tweet.  Result in words attribute.
+        Produce a canonical word list in words.
         Algorithm:
-        1. Strip the text (probably unnecessary).
-        2. Lowercase the text.
-        3. Split into list of words (on whitespace).
-        4. Remove stopwords and duplicates.
-        5. Sort the list.
+        1. Remove stopwords and duplicates.
+        2. Sort the list, rare words (in corpus) first.
         """
 
-        words = re.split(r"(\s|[-/._?#;:,']|http://)+",
-                         self.tweet['text'].lower())
-        for word in words[::2]:
-            if re.match(r"(\s|[-/._?#;:,']|http://)+", word):
-                should_not_match.append(word)
-        for word in words[1::2]:
-            if not re.match(r"(\s|[-/._?#;:,']|http://)+", word):
-                should_match.append(word)
-        words = { word.strip() for word in words[::2] }
-        self.words = [ word for word in words
-                       if word and word not in TweetData.stopset ]
+        self.words = list(set(self.text.split()) - TweetData.stopset)
         self.words.sort()
         
     def _collect_entity_text(self, status):
@@ -240,40 +251,54 @@ class TweetData(object):
 
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
-while True:
-    try:
-        status, offset = decoder.raw_decode(s[start:start+50000])
-        start = start + offset + 1
-        object_count = object_count + 1
-    except Exception as e:
-        # Currently there's no real point in printing the exception,
-        # since we bail out in any case.
-        # print("Error:", e)
-        # print("|", s[start:start+100])
-        print("\nnext = ", start, "end =", end, "\n")
-        # TODO: If the decoder raises, start doesn't get incremented.  So
-        # there's nothing to do but bail out.
-        break
-    try:
-        tweet = TweetData(status)
-        idno = tweet.tweet['id']
-        if idno in tweet_data:
-            print("{0:d} duplicate encountered, replacing.".format(idno))
-            duplicate_count += 1
-        tweet_data[idno] = tweet
-        # #### This really should be a regexp match.
-        for term in reportable_terms:
-            if term in tweet.tweet['text']:
-                terms_count[term] += 1
-    except (KeyError, SamplingException):
-        # We're missing essential data.  Try next tweet.
-        not_tweet_count += 1
-        continue
+def analyze_file(fileobject):
+    global object_count, not_tweet_count, duplicate_count, word_count, \
+        movie_count, required_missing_count, location_count, terms_count, \
+        badlang_count, should_match, should_not_match, word_distribution, \
+        limit_count, tweet_movies, movie_tweets, tweet_data
+    s = f.read()
+    start = 0
+    end = len(s)
+    while True:
+        try:
+            status, offset = decoder.raw_decode(s[start:start+50000])
+            start = start + offset + 1
+            object_count = object_count + 1
+        except Exception as e:
+            # Currently there's no real point in printing the exception,
+            # since we bail out in any case.
+            # print("Error:", e)
+            # print("|", s[start:start+100])
+            print("\nnext = ", start, "end =", end, "\n")
+            # TODO: If the decoder raises, start doesn't get incremented.  So
+            # there's nothing to do but bail out.
+            break
+        try:
+            tweet = TweetData(status)
+            idno = tweet.tweet['id']
+            if idno in tweet_data:
+                print("{0:d} duplicate encountered, replacing.".format(idno))
+                duplicate_count += 1
+            tweet_data[idno] = tweet
+            # #### This really should be a regexp match.
+            for term in reportable_terms:
+                if term in tweet.text:
+                    terms_count[term] += 1
+        except (KeyError, SamplingException):
+            # We're missing essential data.
+            not_tweet_count += 1
+            # Maybe it's a limit notice?
+            limit = status.get('limit')
+            if limit:
+                for k, v in limit.items():
+                    try:
+                        limit_count[k] += v
+                    except Exception:
+                        pass
+            continue
 
-    # munge tweet's text
-    text = clean_text(status['text'])
-    for w in set(text.split()) - TweetData.stopset:
-        word_distribution[w] += 1
+        for w in tweet.words:
+            word_distribution[w] += 1
 
     tweet_movies[idno] = []
     for m in movie.Movie.by_name.values():
@@ -292,12 +317,13 @@ while True:
                 movie_tweets[m] = [tweet]
             tweet_movies[idno].append(m)
 
+for fn in args.FILES:
+    with open(fn) as f:
+        analyze_file(f)
 
-def traverse_tweet_data(root="/mnt/HVL4/Twitter"):
-    return [os.path.join(root, "results", stamp, json)
-            for stamp in os.listdir(os.path.join(root, "results"))
-            for json in os.listdir(os.path.join(root, "results", stamp))
-            if json.endswith(".json")]
+with open("tweet-word-distribution.out", 'w') as f:
+    print("tweet-word-distribution has {0:d} entries.".format(len(word_distribution)), file=f)
+    json.dump(OrderedDict(word_distribution.most_common()), f, indent=4)
 
 print("TWEET DATA SORTED BY id\n")
 mcnt = ncnt = 0
@@ -323,8 +349,8 @@ for m in movie_tweets.keys():
     fmt = "{0:-18d} week={1:d} {2:s}"
     for t in tweets:
         print(fmt.format(t.tweet['id'],
-                         m.timestamp_to_week(t.tweet['timestamp_ms']),
-                         clean_text(t.tweet['text'])))
+                         m.timestamp_to_week(t.timestamp),
+                         clean_text(t.text)))
 
 # Need to define a special encoder.
 # print(json.dumps(movie.Movie.word_movies, indent=4))
@@ -347,7 +373,7 @@ print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 # print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
 print(json.dumps(terms_count, indent=4))
-files = traverse_tweet_data()
+files = [f for f in traverse_tweet_data(".")]
 print(files)
 print(len(files))
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
@@ -361,3 +387,4 @@ print("{0:d} tweets with identified movie(s).".format(mcnt))
 print("{0:d} tweets with no movie identified.".format(ncnt))  
 print("should have matched while splitting: {}".format(should_match))
 print("should not have matched while splitting: {}".format(should_not_match))
+print("limited:", json.dumps(limit_count))
