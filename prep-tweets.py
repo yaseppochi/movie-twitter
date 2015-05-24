@@ -9,7 +9,9 @@ Output is a sorted list of tweet IDs with corresponding movies.
 # You can ignore comments beginning with "TODO:".
 # TODO: This program is based on tweetcheck.py.  Abstract the main loop.
 
-from collections import Counter, OrderedDict
+from collections import Counter, OrderedDict, defaultdict
+from tweetdata import *
+from tempfile import NamedTemporaryFile
 import argparse
 import json
 import movie
@@ -61,10 +63,7 @@ not_tweet_count = 0                     # Valid JSON object but not a tweet.
 duplicate_count = 0                     # Duplicated tweets.
 word_count = Counter()                  # Word distribution.
 movie_count = Counter()                 # Movie distribution.
-required_missing_count = 0              # Count of missing entity lists.
-location_count = Counter()
 terms_count = Counter()
-badlang_count = 0
 should_match = []
 should_not_match = []
 
@@ -78,184 +77,16 @@ should_not_match = []
 
 word_distribution = Counter()
 
-limit_count = Counter()
-
-# #### DON'T FORGET THE RECURSIVE DESCENT INTO ALL DATA.
-# #### ALSO NEED TO COMPUTE WEEK BOUNDARIES.
-
 # #### Combine these.
 tweet_movies = {}
-movie_tweets = {}
+movie_tweets = defaultdict(list)
 tweet_data = {}
-
-class SamplingException(Exception):
-    pass
-
-class MissingRequiredKeyException(SamplingException):
-    pass
-
-class BadLangException(SamplingException):
-    pass
-
-class TweetData(object):
-    """
-    Collect relevant data from a status and prepare it for analysis.
-    """
-
-    stopset = moviedata.STOPSET
-    str_int_keys = ['timestamp_ms']
-    required_keys = ['id','text', 'created_at']
-    general_keys = ['lang', 'favorite_count']
-    general_keys.extend(required_keys)
-    entity_keys = ['urls', 'hashtags']
-    retweet_keys = ['retweet_count']
-    location_keys = ['coordinates', 'geo', 'place',
-                     'user.location', 'user.time_zone']
-    def __init__(self, status):
-        self.tweet = {}
-        self._collect_attrs(self.tweet, status)
-        self._filter()
-        self._collect_entity_text(status)
-        self._collect_miscellaneous(status)
-        self._clean_text()
-        self._canonicalize_text()
-        self.all_words = sorted(set(self.words + self.entity_words))
-
-    def _filter(self):
-        """
-        Raise a SamplingException on a tweet that is out of sample.
-        """
-        # #### These exceptions are probably mutually exclusive, but if not
-        # we interpret BadLang as applying only to valid tweets.
-        global required_missing_count, badlang_count
-        missing = []
-        for k in self.required_keys:
-            if self.tweet[k] is None:
-                missing.append(k)
-        if missing:
-            required_missing_count += 1
-            raise MissingRequiredKeyException(missing)
-        # #### Are there 3-letter RFC 3166 codes starting with "en"?
-        if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
-            print(self.tweet['text'][:78])
-            badlang_count += 1
-            raise BadLangException(self.tweet['lang'])
-
-    # The tweet argument allows recursion for retweets.
-    def _collect_attrs(self, tweet, status):
-        for k in TweetData.general_keys:
-            # #### Use status.get(k) here.
-            tweet[k] = status[k] if k in status else None
-        for k in TweetData.str_int_keys:
-            # Can't use .get() here!
-            tweet[k] = int(status[k]) if k in status else None
-        if 'entities' in status:
-            entities = status['entities']
-            for k in TweetData.entity_keys:
-                tweet[k] = entities[k] if k in entities else None
-        if 'retweeted_status' in status:
-            original = status['retweeted_status']
-            working = {}
-            self._collect_attrs(working, original)
-            for k in TweetData.retweet_keys:
-                working[k] = original[k] if k in original else None
-            self.tweet['original'] = working
-        else:
-            self.tweet['original'] = None
-        self.timestamp = int(status['timestamp_ms'])/1000
-
-    def _clean_text(self):
-        """
-        Canonicalize the text of the tweet into text.
-        Algorithm:
-        1. Lowercase the text.
-        2. Replace certain patterns with uppercase symbols.
-        3. Split into list of words (on whitespace).
-        4. Strip the text (probably unnecessary).
-        """
-
-        if hasattr(self, 'text'):
-            return
-        s = self.tweet['text'].lower()
-        s = re.sub(r"\bhttps?://[-a-z0-9/?#,.]+", " URL ", s)
-        s = re.sub(r"[^\u0000-\u00ff]+", " \0 ", s)
-        s = re.sub(r"@\w+\b", " @USER ", s)
-        # #### This could mean "rewteet", but it could be "round trip", too.
-        # s = re.sub(r"\bRT\b:?", " ", s)
-        s = re.sub(r"\s+", " ", s)
-        self.text = s.strip()
-
-    def _canonicalize_text(self):
-        """
-        Produce a canonical word list in words.
-        Algorithm:
-        1. Remove stopwords and duplicates.
-        2. Sort the list, rare words (in corpus) first.
-        """
-
-        self.words = list(set(self.text.split()) - TweetData.stopset)
-        self.words.sort()
-        
-    def _collect_entity_text(self, status):
-        if 'entities' in status:
-            entities = status['entities']
-            self.hash_text = " ".join(h['text']
-                                      for h in entities['hashtags']) \
-                             if 'hashtags' in entities else ""
-            self.media_text = " ".join(m['expanded_url'] + " "
-                                       + m['display_url']
-                                       for m in entities['media']) \
-                              if 'media' in entities else ""
-            self.url_text = " ".join(u['expanded_url'] + " " + u['display_url']
-                                     for u in entities['urls']) \
-                            if 'urls' in entities else ""
-            self.user_text = " ".join(u['screen_name']
-                                  for u in entities['user_mentions']) \
-                             if 'user_mentions' in entities else ""
-            # Split the concatenation of texts on URL segment boundaries
-            # as well as English word boundaries.
-            words = " ".join([self.hash_text, self.media_text, self.url_text,
-                              self.user_text]).lower()
-            # Split, eliminate duplicates, and sort.
-            words = [ word.strip() for word
-                      in re.split(r"(\s|[-:/._?#;,']|http://)+", words)][::2]
-            self.entity_words = sorted(set(word for word in words if word))
-        else:
-            self.entity_words = []
-
-    def _collect_miscellaneous(self, status):
-        # #### Refactor this for efficiency!!
-        # #### Use this technique for retweet fields.
-        def extract_location(key, tweet):
-            keys = key.split(".")
-            result = tweet
-            for k in keys:
-                result = result.get(k)
-                if not result: break
-            return result
-        for k in TweetData.location_keys:
-            result = extract_location(k, status)
-            if result:
-                location_count[k] += 1
-                self.tweet[k] = result
-        # #### Probably should collect retweet operations.
-        if 'retweeted_status' in status:
-            retweet = status['retweeted_status']
-            for k in TweetData.location_keys:
-                result = extract_location(k, retweet)
-                if result:
-                    location_count["retweet." + k] += 1
-                    # #### Flatten retweet attributes.
-                    self.tweet['original'][k] = result
-
 
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
 def analyze_file(fileobject):
-    global object_count, not_tweet_count, duplicate_count, word_count, \
-        movie_count, required_missing_count, location_count, terms_count, \
-        badlang_count, should_match, should_not_match, word_distribution, \
-        limit_count, tweet_movies, movie_tweets, tweet_data
+    global word_count, movie_count, tweet_movies, movie_tweets, \
+        word_distribution, tweet_data, sampling_count, terms_count
     s = f.read()
     start = 0
     end = len(s)
@@ -263,7 +94,7 @@ def analyze_file(fileobject):
         try:
             status, offset = decoder.raw_decode(s[start:start+50000])
             start = start + offset + 1
-            object_count = object_count + 1
+            sampling_count["JSON objects"] += 1
         except Exception as e:
             # Currently there's no real point in printing the exception,
             # since we bail out in any case.
@@ -275,55 +106,75 @@ def analyze_file(fileobject):
             break
         try:
             tweet = TweetData(status)
-            idno = tweet.tweet['id']
+            idno = status['id']
             if idno in tweet_data:
                 print("{0:d} duplicate encountered, replacing.".format(idno))
-                duplicate_count += 1
+                sampling_count["duplicate tweet"] += 1
             tweet_data[idno] = tweet
             # #### This really should be a regexp match.
             for term in reportable_terms:
                 if term in tweet.text:
                     terms_count[term] += 1
-        except (KeyError, SamplingException):
+        except (KeyError, SamplingException) as e:
             # We're missing essential data.
-            not_tweet_count += 1
+            sampling_count['not a tweet'] += 1
             # Maybe it's a limit notice?
             limit = status.get('limit')
             if limit:
+                sampling_count['limit'] += 1
                 for k, v in limit.items():
                     try:
-                        limit_count[k] += v
+                        sampling_count["limit." + k] += v
                     except Exception:
                         pass
+            else:
+                print(e)
             continue
 
         for w in tweet.words:
             word_distribution[w] += 1
 
-    tweet_movies[idno] = []
-    for m in movie.Movie.by_name.values():
-        found = True
-        for w in m.words:
-            if w not in tweet.all_words:
-                found = False
-            else:
-                word_count[w] += 1
-        if found:
-            movie_count[m] += 1
-            # #### movie_tweets should be a DefaultDict
-            if m in movie_tweets:
+        tweet_movies[idno] = []
+        for m in movie.Movie.by_name.values():
+            found = True
+            for w in m.words:
+                if w not in tweet.all_words:
+                    found = False
+                else:
+                    word_count[w] += 1
+            if found:
+                movie_count[m] += 1
                 movie_tweets[m].append(tweet)
-            else:
-                movie_tweets[m] = [tweet]
-            tweet_movies[idno].append(m)
+                tweet_movies[idno].append(m)
+
+COUNT_REPORTS = [
+    ("tweet-word-distribution", word_distribution),
+    # Need to refactor (or maybe define special json encoders).
+    # ("movie-word-distribution", word_count),
+    # ("movie-distribution", movie_count),
+    ("filter-terms-distribution", terms_count),
+    ("location-available-counts", location_count),
+    ("sampling-counts", sampling_count),
+    ]
+
+if os.path.isdir("./reports"):
+    pass
+elif os.path.exists("./reports"):
+    raise RuntimeError("reports exists and is non-directory")
+else:
+    os.mkdir("./reports")
 
 for fn in args.FILES:
-    with open(fn) as f:
+    with open (fn) as f:
         analyze_file(f)
-
-with open("tweet-word-distribution.out", 'w') as f:
-    print("tweet-word-distribution has {0:d} entries.".format(len(word_distribution)), file=f)
-    json.dump(OrderedDict(word_distribution.most_common()), f, indent=4)
+        for name, dist in COUNT_REPORTS:
+            with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
+                # For Windows portability.
+                tname = tf.name
+                print("{0:s} has {1:d} entries.".format(name, len(dist)),
+                      file=tf)
+                json.dump(OrderedDict(dist.most_common()), tf, indent=4)
+            os.rename(tname, "./reports/" + name + ".out")
 
 print("TWEET DATA SORTED BY id\n")
 mcnt = ncnt = 0
@@ -361,30 +212,17 @@ for w, l in movie.Movie.word_movies.items():
         print("        ", m.name, ",", sep="")
     print("        ]")
 print("}")
-# Need to define a special encoder.
-# print(json.dumps(movie_words, indent=4))
 print("{")
 for n, m in movie.Movie.by_name.items():
     print("   ", n, ": [ ", end="")
     print(*m.words, sep=", ", end=" ]\n")
 print("}")
-print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
-# Need to define a special encoder.
-# print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
-print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
-print(json.dumps(terms_count, indent=4))
 files = [f for f in traverse_tweet_data(".")]
 #print(files)
 print("There are", len(files), "output files in the database.")
-print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
-print("{0:d} duplicates, and ".format(duplicate_count), end='')
-print("{0:d} non-tweets in ".format(not_tweet_count), end='')
-print("{0:d} objects.".format(object_count))
-print("{0:d} missing attributes found.".format(required_missing_count))
-print("{0:d} tweets with non-English lang found".format(badlang_count))
+print("{0:d} unique tweets, ".format(len(tweet_movies)))
 print("len(idnos) = {0:d}.".format(len(idnos)))
 print("{0:d} tweets with identified movie(s).".format(mcnt))
 print("{0:d} tweets with no movie identified.".format(ncnt))  
 print("should have matched while splitting: {}".format(should_match))
 print("should not have matched while splitting: {}".format(should_not_match))
-print("limited:", json.dumps(limit_count))
