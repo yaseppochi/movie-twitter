@@ -18,6 +18,14 @@ import os
 import os.path
 import re
 
+def clean_text(s):
+    s = s.lower()
+    s = re.sub(r"\bhttp://[-a-z0-9/?#,.]+\b[?/#:]*", " URL ", s)
+    s = re.sub(r"\b@\w+\b:?", " @USER ", s)
+    s = re.sub(r"\bRT\b:?", " ", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
 # Set up the input file.  STREAM refers to future use with Twitter API.
 parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
 parser.add_argument('STREAM', type=str, help="File of JSON tweets")
@@ -305,14 +313,6 @@ for idno in idnos:
     print(json.dumps(tweet_data[idno].tweet, indent=4))
 
 print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARITY\n")
-
-def clean_text(s):
-    s = s.lower()
-    s = re.sub(r"\bhttp://[-a-z0-9/?#,.]+\b[?/#:]*", " URL ", s)
-    s = re.sub(r"\b@\w+\b:?", " @USER ", s)
-    s = re.sub(r"\bRT\b:?", " ", s)
-    s = re.sub(r"\s+", " ", s)
-    return s.strip()
 
 for m in movie_tweets.keys():
     tweets = [t for t in movie_tweets[m] if t.words]
