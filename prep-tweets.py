@@ -14,6 +14,8 @@ import argparse
 import json
 import movie
 import moviedata
+import os
+import os.path
 import re
 
 # Set up the input file.  STREAM refers to future use with Twitter API.
@@ -67,7 +69,7 @@ should_not_match = []
 # replaced with the symbol @USER.  Third, hashtags are counted twice: once
 # as the hashtag, and once as the word without the hash.
 
-#### word_distribution = Counter()
+word_distribution = Counter()
 
 # #### DON'T FORGET THE RECURSIVE DESCENT INTO ALL DATA.
 # #### ALSO NEED TO COMPUTE WEEK BOUNDARIES.
@@ -91,7 +93,7 @@ class TweetData(object):
     Collect relevant data from a status and prepare it for analysis.
     """
 
-    stoplist = moviedata.STOPLIST
+    stopset = moviedata.STOPSET
     str_int_keys = ['timestamp_ms']
     required_keys = ['id','text', 'created_at']
     general_keys = ['lang', 'favorite_count']
@@ -172,7 +174,7 @@ class TweetData(object):
                 should_match.append(word)
         words = { word.strip() for word in words[::2] }
         self.words = [ word for word in words
-                       if word and word not in TweetData.stoplist ]
+                       if word and word not in TweetData.stopset ]
         self.words.sort()
         
     def _collect_entity_text(self, status):
@@ -260,6 +262,11 @@ while True:
         not_tweet_count += 1
         continue
 
+    # munge tweet's text
+    text = clean_text(status['text'])
+    for w in set(text.split()) - TweetData.stopset:
+        word_distribution[w] += 1
+
     tweet_movies[idno] = []
     for m in movie.Movie.by_name.values():
         found = True
@@ -278,6 +285,12 @@ while True:
             tweet_movies[idno].append(m)
 
 
+def traverse_tweet_data(root="/mnt/HVL4/Twitter"):
+    return [os.path.join(root, "results", stamp, json)
+            for stamp in os.listdir(os.path.join(root, "results"))
+            for json in os.listdir(os.path.join(root, "results", stamp))
+            if json.endswith(".json")]
+
 print("TWEET DATA SORTED BY id\n")
 mcnt = ncnt = 0
 idnos = sorted(tweet_movies.keys())
@@ -294,8 +307,10 @@ for idno in idnos:
 print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARITY\n")
 
 def clean_text(s):
-    s = re.sub(r"(?i)(\bhttp://[-a-z0-9/?#,.]+[?/#]?\b|(^|\s)@\w+\b|\bRT\b):?",
-               " ", s)
+    s = s.lower()
+    s = re.sub(r"\bhttp://[-a-z0-9/?#,.]+\b[?/#:]*", " URL ", s)
+    s = re.sub(r"\b@\w+\b:?", " @USER ", s)
+    s = re.sub(r"\bRT\b:?", " ", s)
     s = re.sub(r"\s+", " ", s)
     return s.strip()
 
@@ -305,10 +320,11 @@ for m in movie_tweets.keys():
     print("{0:s} ({1:d}, {2:d}):".format(m.name,
                                          len(movie_tweets[m]),
                                          len(tweets)))
+    fmt = "{0:-18d} week={1:d} {2:s}"
     for t in tweets:
-        print("{0:-18d} week={1:d} {2:s}".format(t.tweet['id'],
-                                                 m.timestamp_to_week(t.tweet['timestamp_ms']),
-                                                 clean_text(t.tweet['text'])))
+        print(fmt.format(t.tweet['id'],
+                         m.timestamp_to_week(t.tweet['timestamp_ms']),
+                         clean_text(t.tweet['text'])))
 
 # Need to define a special encoder.
 # print(json.dumps(movie.Movie.word_movies, indent=4))
@@ -331,6 +347,9 @@ print(json.dumps(OrderedDict(word_count.most_common()), indent=4))
 # print(json.dumps(OrderedDict(movie_count.most_common()), indent=4))
 print(json.dumps(OrderedDict(location_count.most_common()), indent=4))
 print(json.dumps(terms_count, indent=4))
+files = traverse_tweet_data()
+print(files)
+print(len(files))
 print("{0:d} unique tweets, ".format(len(tweet_movies)), end='')
 print("{0:d} duplicates, and ".format(duplicate_count), end='')
 print("{0:d} non-tweets in ".format(not_tweet_count), end='')
