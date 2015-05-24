@@ -184,7 +184,7 @@ DATES_MOVIES = [ # "movie",
      "Results"],
     ]
 
-STOPLIST = ["a", "an", "the", "some", "to", "from", "for", "with"]
+STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
 
 PUNCT = { ord(',') : None,
           ord('?') : None,
