@@ -1,4 +1,10 @@
+from collections import Counter
 from moviedata import STOPSET
+import re
+
+# This needs to be cleaned up.
+location_count = Counter()
+sampling_count = Counter()
 
 class SamplingException(Exception):
     pass
@@ -15,8 +21,7 @@ class TweetData(object):
     """
 
     stopset = STOPSET
-    str_int_keys = ['timestamp_ms']
-    required_keys = ['id','text', 'created_at']
+    required_keys = ['id','text', 'created_at', 'timestamp_ms']
     general_keys = ['lang', 'favorite_count']
     general_keys.extend(required_keys)
     entity_keys = ['urls', 'hashtags']
@@ -27,6 +32,7 @@ class TweetData(object):
         self.tweet = {}
         self._collect_attrs(self.tweet, status)
         self._filter()
+        self.timestamp = int(self.tweet['timestamp_ms'])/1000
         self._collect_entity_text(status)
         self._collect_miscellaneous(status)
         self._clean_text()
@@ -39,44 +45,44 @@ class TweetData(object):
         """
         # #### These exceptions are probably mutually exclusive, but if not
         # we interpret BadLang as applying only to valid tweets.
-        global required_missing_count, badlang_count
         missing = []
         for k in self.required_keys:
             if self.tweet[k] is None:
                 missing.append(k)
         if missing:
-            required_missing_count += 1
+            sampling_count['required attribute missing'] += 1
             raise MissingRequiredKeyException(missing)
         # #### Are there 3-letter RFC 3166 codes starting with "en"?
         if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
             print(self.tweet['text'][:78])
-            badlang_count += 1
+            sampling_count["bad language"] += 1
             raise BadLangException(self.tweet['lang'])
 
     # The tweet argument allows recursion for retweets.
     def _collect_attrs(self, tweet, status):
         for k in TweetData.general_keys:
-            # #### Use status.get(k) here.
-            tweet[k] = status[k] if k in status else None
-        for k in TweetData.str_int_keys:
-            # Can't use .get() here!
-            tweet[k] = int(status[k]) if k in status else None
+            tweet[k] = status.get(k)
         if 'entities' in status:
             entities = status['entities']
             for k in TweetData.entity_keys:
-                tweet[k] = entities[k] if k in entities else None
+                tweet[k] = entities.get(k)
         if 'retweeted_status' in status:
             original = status['retweeted_status']
             working = {}
             self._collect_attrs(working, original)
             for k in TweetData.retweet_keys:
-                working[k] = original[k] if k in original else None
+                working[k] = original.get(k)
             self.tweet['original'] = working
         else:
             self.tweet['original'] = None
-        self.timestamp = int(status['timestamp_ms'])/1000
 
-    def _clean_text(self):
+    def _clean_text(self,
+                    # Don't use these arguments.
+                    url_re = re.compile(r"\bhttps?://[-a-z0-9/?#,.]+"),
+                    astral_re = re.compile(r"[^\u0000-\u00ff]+"),
+                    retweet_re = re.compile(r"\bRT\b:?"),
+                    user_re = re.compile(r"@\w+\b"),
+                    space_re = re.compile(r"\s+")):
         """
         Canonicalize the text of the tweet into text.
         Algorithm:
@@ -86,13 +92,7 @@ class TweetData(object):
         4. Strip the text (probably unnecessary).
         """
 
-        if hasattr(self, 'text',
-                   # Don't use these arguments.
-                   url_re = re.compile(r"\bhttps?://[-a-z0-9/?#,.]+"),
-                   astral_re = re.compile(r"[^\u0000-\u00ff]+"),
-                   retweet_re = re.compile(r"\bRT\b:?"),
-                   user_re = re.compile(r"@\w+\b"),
-                   space_re = re.compile(r"\s+")):
+        if hasattr(self, 'text'):
             return
         s = self.tweet['text'].lower()
         s = url_re.sub(" URL ", s)
