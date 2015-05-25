@@ -74,6 +74,8 @@ should_not_match = []
 # Movie distribution.
 movie_count = defaultdict(Counter)
 untimely_count = Counter()
+FIRST_WEEK = -1
+LAST_WEEK = 10
 
 # Compute the distribution of words.
 # This is not the number of times a word occurs in the corpus, but rather
@@ -178,7 +180,7 @@ def analyze_file(fileobject):
                     word_count[w] += 1
             if found:
                 week = m.timestamp_to_week(tweet.timestamp)
-                if week >= -1 and week <= 7:
+                if week >= FIRST_WEEK and week <= LAST_WEEK:
                     movie_count[m][week] += 1
                     #movie_tweets[m].append(tweet)
                     #tweet_movies[idno].append(m)
@@ -186,9 +188,24 @@ def analyze_file(fileobject):
                     untimely_count[m.name] += 1
 
 for fn in files:
+    sys.stdout.flush()
     print("Analyzing", fn)
     with open (fn) as f:
         analyze_file(f)
+        # the main datafile
+        with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
+            # For Windows portability.
+            tname = tf.name
+            print("TWEET COUNTS BY MOVIE AND WEEK", file=tf)
+            print("If a movie doesn't appear here, all weeks are 0.\n\n{",
+                  file=tf)
+            for m in movie_count:
+                print("   ", m.name, "{", file=tf)
+                for w in range(FIRST_WEEK, LAST_WEEK + 1):
+                    print("        week", w, ":", movie_count[m][w], file=tf)
+                print("    }", file=tf)
+            print("}", file=tf)
+        os.rename(tname, "./reports/movie-count-by-week.out")
         # #### It would be nice if this code could be told to append.
         for header, name, dist in COUNT_REPORTS:
             with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
