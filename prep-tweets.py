@@ -227,10 +227,11 @@ for fn in files:
         with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
             # For Windows portability.
             tname = tf.name
-            fmt = "There were {0:d} objects, containing {1:d} unique tweets."
+            fmt = "There were {0:d} objects, containing {1:d} unique in-period tweets."
             print(fmt.format(sampling_count['JSON objects'],
                              len(tweet_data)),
                   file=tf)
+            print("Tweets are counted only once, but may apply to multiple movies.", file=tf)
         os.rename(tname, "./reports/summary.out")
 
 # #### This code doesn't work with tweet_data as list!
