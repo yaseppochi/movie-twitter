@@ -22,6 +22,9 @@ import pytz
 import re
 import sys
 
+track_movie_tweets = False
+print_tweets_as_json = False
+
 # Set up the input file.  STREAM refers to future use with Twitter API.
 parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
 parser.add_argument('FILES', type=str, help="Files of JSON tweets", nargs='*')
@@ -32,12 +35,14 @@ def traverse_tweet_data(root):
     return (os.path.join(root, "results", stamp, json)
             for stamp in os.listdir(os.path.join(root, "results"))
             for json in os.listdir(os.path.join(root, "results", stamp))
-            if json.endswith(".json"))
+            if json.startswith("stream-") and json.endswith(".json"))
 
 if not args.FILES:
-    files = traverse_tweet_data(root)
+    files = list(traverse_tweet_data(args.dataroot))
 else:
     files = args.FILES
+
+#print(*files, sep="\n")
 
 # Set up the JSON decoder.
 decoder = json.JSONDecoder()
@@ -62,10 +67,13 @@ not_tweet_count = 0                     # Valid JSON object but not a tweet.
                                         # Eg, an "end connection" message.
 duplicate_count = 0                     # Duplicated tweets.
 word_count = Counter()                  # Word distribution.
-movie_count = Counter()                 # Movie distribution.
 terms_count = Counter()
 should_match = []
 should_not_match = []
+
+# Movie distribution.
+movie_count = defaultdict(Counter)
+untimely_count = Counter()
 
 # Compute the distribution of words.
 # This is not the number of times a word occurs in the corpus, but rather
@@ -78,15 +86,40 @@ should_not_match = []
 word_distribution = Counter()
 
 # #### Combine these.
-tweet_movies = {}
-movie_tweets = defaultdict(list)
-tweet_data = {}
+#tweet_movies = {}
+#movie_tweets = defaultdict(list)
+#tweet_data = {}
+tweet_data = set()
 
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
+COUNT_REPORTS = [
+    ("DISTRIBUTION OF WORDS FOUND IN TWEETS",
+     "tweet-word-distribution", word_distribution),
+    # Need to refactor (or maybe define special json encoders).
+    # ("#### fixme!", "movie-word-distribution", word_count),
+    # ("#### fixme!", "movie-distribution", movie_count),
+    ("DISTRIBUTION OF TERMS USED FOR FILTERING",
+     "filter-terms-distribution", terms_count),
+    ("DISTRIBUTION OF LOCATION-SPECIFIC TERMS",
+     "location-available-counts", location_count),
+    ("DISTRIBUTION OF INAPPROPRIATE TWEETS",
+     "sampling-counts", sampling_count),
+    ("DISTRIBUTION OF OUT-OF-SAMPLE-PERIOD TWEETS",
+     "untimely-counts", untimely_count)
+    ]
+
+if os.path.isdir("./reports"):
+    pass
+elif os.path.exists("./reports"):
+    raise RuntimeError("reports exists and is non-directory")
+else:
+    os.mkdir("./reports")
+
 def analyze_file(fileobject):
-    global word_count, movie_count, tweet_movies, movie_tweets, \
-        word_distribution, tweet_data, sampling_count, terms_count
+    global word_count, movie_count, sampling_count, terms_count, \
+        tweet_data, word_distribution
+        # tweet_movies, movie_tweets
     s = f.read()
     start = 0
     end = len(s)
@@ -110,7 +143,8 @@ def analyze_file(fileobject):
             if idno in tweet_data:
                 print("{0:d} duplicate encountered, replacing.".format(idno))
                 sampling_count["duplicate tweet"] += 1
-            tweet_data[idno] = tweet
+            #tweet_data[idno] = tweet
+            tweet_data.add(idno)
             # #### This really should be a regexp match.
             for term in reportable_terms:
                 if term in tweet.text:
@@ -127,14 +161,14 @@ def analyze_file(fileobject):
                         sampling_count["limit." + k] += v
                     except Exception:
                         pass
-            else:
-                print(e)
+            #else:
+            #    print(e)
             continue
 
         for w in tweet.words:
             word_distribution[w] += 1
 
-        tweet_movies[idno] = []
+        #tweet_movies[idno] = []
         for m in movie.Movie.by_name.values():
             found = True
             for w in m.words:
@@ -143,86 +177,93 @@ def analyze_file(fileobject):
                 else:
                     word_count[w] += 1
             if found:
-                movie_count[m] += 1
-                movie_tweets[m].append(tweet)
-                tweet_movies[idno].append(m)
+                week = m.timestamp_to_week(tweet.timestamp)
+                if week >= -1 and week <= 7:
+                    movie_count[m][week] += 1
+                    #movie_tweets[m].append(tweet)
+                    #tweet_movies[idno].append(m)
+                else:
+                    untimely_count[m.name] += 1
 
-COUNT_REPORTS = [
-    ("tweet-word-distribution", word_distribution),
-    # Need to refactor (or maybe define special json encoders).
-    # ("movie-word-distribution", word_count),
-    # ("movie-distribution", movie_count),
-    ("filter-terms-distribution", terms_count),
-    ("location-available-counts", location_count),
-    ("sampling-counts", sampling_count),
-    ]
-
-if os.path.isdir("./reports"):
-    pass
-elif os.path.exists("./reports"):
-    raise RuntimeError("reports exists and is non-directory")
-else:
-    os.mkdir("./reports")
-
-for fn in args.FILES:
+for fn in files:
+    print("Analyzing", fn)
     with open (fn) as f:
         analyze_file(f)
-        for name, dist in COUNT_REPORTS:
+        # #### It would be nice if this code could be told to append.
+        for header, name, dist in COUNT_REPORTS:
             with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
+                print(header, file=tf)
                 # For Windows portability.
                 tname = tf.name
                 print("{0:s} has {1:d} entries.".format(name, len(dist)),
                       file=tf)
                 json.dump(OrderedDict(dist.most_common()), tf, indent=4)
             os.rename(tname, "./reports/" + name + ".out")
+        with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
+            # For Windows portability.
+            tname = tf.name
+            fmt = "There were {0:d} objects, containing {1:d} unique tweets."
+            print(fmt.format(sampling_count['JSON objects'],
+                             len(tweet_data)),
+                  file=tf)
+        os.rename(tname, "./reports/summary.out")
 
-print("TWEET DATA SORTED BY id\n")
-mcnt = ncnt = 0
-idnos = sorted(tweet_movies.keys())
-for idno in idnos:
-    print("{0:d} ".format(idno), end='')
-    if tweet_movies[idno]:
-        mcnt = mcnt + 1
-        for m in tweet_movies[idno]:
-            print('"{0}"'.format(m), end=' ')
-    else:
-        ncnt = ncnt + 1
-    print(json.dumps(tweet_data[idno].tweet, indent=4))
+# #### This code doesn't work with tweet_data as list!
+if print_tweets_as_json:
+    idnos = sorted(tweet_movies.keys())
+    with open("./reports/tweet-json-by-id.out", "w") as f:
+        print("TWEET DATA SORTED BY id\n", file=f)
+        mcnt = ncnt = 0
+        for idno in idnos:
+            print("{0:d} ".format(idno), end='', file=f)
+            if tweet_movies[idno]:
+                mcnt = mcnt + 1
+                for m in tweet_movies[idno]:
+                    print('"{0}"'.format(m), end=' ', file=f)
+            else:
+                ncnt = ncnt + 1
+            print(json.dumps(tweet_data[idno].tweet, indent=4), file=f)
 
-print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARITY\n")
 
-for m in movie_tweets.keys():
-    tweets = [t for t in movie_tweets[m] if t.words]
-    tweets.sort(key=lambda t: t.words)
-    print("{0:s} ({1:d}, {2:d}):".format(m.name,
-                                         len(movie_tweets[m]),
-                                         len(tweets)))
-    fmt = "{0:-18d} week={1:d} {2:s}"
-    for t in tweets:
-        print(fmt.format(t.tweet['id'],
-                         m.timestamp_to_week(t.timestamp),
-                         t.text))
+if track_movie_tweets:
+    with open("./reports/tweets-by-movie.out", "w") as f:
+        print("\nTWEET CONTENT BY MOVIE, SORTED FOR SOME SIMILARITY\n",
+              file=f)
+        for m in movie_tweets.keys():
+            tweets = [t for t in movie_tweets[m] if t.words]
+            tweets.sort(key=lambda t: t.words)
+            print("{0:s} ({1:d}, {2:d}):".format(m.name,
+                                                 len(movie_tweets[m]),
+                                                 len(tweets)),
+                  file=f)
+            fmt = "{0:-18d} week={1:d} {2:s}"
+            for t in tweets:
+                print(fmt.format(t.tweet['id'],
+                                 m.timestamp_to_week(t.timestamp),
+                                 t.text),
+                      file=f)
 
-# Need to define a special encoder.
-# print(json.dumps(movie.Movie.word_movies, indent=4))
-print("{")
-for w, l in movie.Movie.word_movies.items():
-    print("    ", w, " : [", sep="")
-    for m in l:
-        print("        ", m.name, ",", sep="")
-    print("        ]")
-print("}")
-print("{")
-for n, m in movie.Movie.by_name.items():
-    print("   ", n, ": [ ", end="")
-    print(*m.words, sep=", ", end=" ]\n")
-print("}")
-files = [f for f in traverse_tweet_data(".")]
-#print(files)
+with open("./reports/movie-maps.out", "w") as of:
+    # Need to define a special encoder.
+    # print(json.dumps(movie.Movie.word_movies, indent=4))
+    print("{", file=of)
+    for w, l in movie.Movie.word_movies.items():
+        print("    ", w, " : [", sep="", file=of)
+        for m in l:
+            print("        ", m.name, ",", sep="", file=of)
+            print("        ]", file=of)
+            print("}", file=of)
+            print("{", file=of)
+    for n, m in movie.Movie.by_name.items():
+        print("   ", n, ": [ ", end="", file=of)
+        print(*m.words, sep=", ", end=" ]\n", file=of)
+    print("}", file=of)
+
 print("There are", len(files), "output files in the database.")
-print("{0:d} unique tweets, ".format(len(tweet_movies)))
-print("len(idnos) = {0:d}.".format(len(idnos)))
-print("{0:d} tweets with identified movie(s).".format(mcnt))
-print("{0:d} tweets with no movie identified.".format(ncnt))  
-print("should have matched while splitting: {}".format(should_match))
-print("should not have matched while splitting: {}".format(should_not_match))
+print("There were {0:d} objects, ".format(sampling_count['JSON objects']),
+      end='')
+print("containing {0:d} unique tweets.".format(len(tweet_data)))
+#print("{0:d} tweets with identified movie(s).".format(mcnt))
+#print("{0:d} tweets with no movie identified.".format(ncnt))  
+#print("should have matched while splitting: {}".format(should_match))
+#print("should not have matched while splitting: {}".format(should_not_match))

@@ -77,7 +77,7 @@ class Movie(object):
                 wm[w] = [self]
 
     def timestamp_to_week(self, time, _week=datetime.timedelta(7)):
-        return (datetime.datetime.fromtimestamp(time/1000, moviedata.nytime)
+        return (datetime.datetime.fromtimestamp(time, moviedata.nytime)
                 - self.opening_date) // _week
 
 

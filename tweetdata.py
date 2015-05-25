@@ -54,7 +54,7 @@ class TweetData(object):
             raise MissingRequiredKeyException(missing)
         # #### Are there 3-letter RFC 3166 codes starting with "en"?
         if 'lang' in self.tweet and not self.tweet['lang'].startswith('en'):
-            print(self.tweet['text'][:78])
+            # print(self.tweet['text'][:78])
             sampling_count["bad language"] += 1
             raise BadLangException(self.tweet['lang'])
 
