@@ -193,19 +193,27 @@ for fn in files:
     with open (fn) as f:
         analyze_file(f)
         # the main datafile
+        # It should be optional to get JSON output or both JSON and CSV.
+        # Code is at tag json-report.
+        # #### The use of FIRST_WEEK and LAST_WEEK may be buggy!
         with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
             # For Windows portability.
             tname = tf.name
-            print("TWEET COUNTS BY MOVIE AND WEEK", file=tf)
-            print("If a movie doesn't appear here, all weeks are 0.\n\n{",
+            print('"TWEET COUNTS BY MOVIE AND WEEK",,,,,,,,,,,', file=tf)
+            print('"If a movie does not appear here, all weeks are 0.",,,,,,,,,,,',
                   file=tf)
+            print('"Week 0 is the week BEFORE opening.",,,,,,,,,,,',
+                  file=tf)
+            print('"MovieName"', end='', file=tf)
+            for i in range(11):
+                print(',"Week{0:d}"'.format(i), end='', file=tf)
+            print(file=tf)
             for m in movie_count:
-                print("   ", m.name, "{", file=tf)
-                for w in range(FIRST_WEEK, LAST_WEEK + 1):
-                    print("        week", w, ":", movie_count[m][w], file=tf)
-                print("    }", file=tf)
-            print("}", file=tf)
-        os.rename(tname, "./reports/movie-count-by-week.out")
+                print('"', m.name, '"', sep='', end='', file=tf)
+                for w in range(FIRST_WEEK, LAST_WEEK):
+                    print(",{0:d}".format(movie_count[m][w]), end='', file=tf)
+                print(file=tf)
+        os.rename(tname, "./reports/movie-count-by-week.csv")
         # #### It would be nice if this code could be told to append.
         for header, name, dist in COUNT_REPORTS:
             with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
