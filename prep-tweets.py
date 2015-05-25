@@ -187,6 +187,8 @@ def analyze_file(fileobject):
                 else:
                     untimely_count[m.name] += 1
 
+WORLD_READABLE = 0o644
+
 for fn in files:
     sys.stdout.flush()
     print("Analyzing", fn)
@@ -213,7 +215,9 @@ for fn in files:
                 for w in range(FIRST_WEEK, LAST_WEEK):
                     print(",{0:d}".format(movie_count[m][w]), end='', file=tf)
                 print(file=tf)
-        os.rename(tname, "./reports/movie-count-by-week.csv")
+        newname = "./reports/movie-count-by-week.csv"
+        os.rename(tname, newname)
+        os.chmod(newname, WORLD_READABLE)
         # #### It would be nice if this code could be told to append.
         for header, name, dist in COUNT_REPORTS:
             with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
@@ -223,7 +227,9 @@ for fn in files:
                 print("{0:s} has {1:d} entries.".format(name, len(dist)),
                       file=tf)
                 json.dump(OrderedDict(dist.most_common()), tf, indent=4)
-            os.rename(tname, "./reports/" + name + ".out")
+            newname = "./reports/" + name + ".out"
+            os.rename(tname, newname)
+            os.chmod(newname, WORLD_READABLE)
         with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
             # For Windows portability.
             tname = tf.name
@@ -232,7 +238,9 @@ for fn in files:
                              len(tweet_data)),
                   file=tf)
             print("Tweets are counted only once, but may apply to multiple movies.", file=tf)
-        os.rename(tname, "./reports/summary.out")
+        newname = "./reports/summary.out"
+        os.rename(tname, newname)
+        os.chmod(newname, WORLD_READABLE)
 
 # #### This code doesn't work with tweet_data as list!
 if print_tweets_as_json:
