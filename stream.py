@@ -7,7 +7,8 @@
 # in 156 seconds, a rate of 2424 MB/day and 553,846 tweets/day for
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
-from moviedata import MOVIES, PUNCT, track_join # STOPLIST also available.
+from moviedata import MOVIES, PUNCT # STOPLIST also available.
+from movie import track_join
 from myauth import get_my_api
 import http.client
 import json
