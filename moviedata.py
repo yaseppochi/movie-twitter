@@ -184,6 +184,10 @@ DATES_MOVIES = [ # "movie",
      "Results"],
     ]
 
+MOVIES = []
+for date in DATES_MOVIES:
+    MOVIES.extend(date[1:])
+
 STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
 
 PUNCT = { ord(',') : None,
