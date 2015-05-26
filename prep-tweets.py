@@ -201,17 +201,18 @@ for fn in files:
         with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
             # For Windows portability.
             tname = tf.name
-            print('"TWEET COUNTS BY MOVIE AND WEEK",,,,,,,,,,,', file=tf)
-            print('"If a movie does not appear here, all weeks are 0.",,,,,,,,,,,',
+            print('"TWEET COUNTS BY MOVIE AND WEEK",,,,,,,,,,,,', file=tf)
+            print('"If a movie does not appear here, all weeks are 0.",,,,,,,,,,,,',
                   file=tf)
-            print('"Week 0 is the week BEFORE opening.",,,,,,,,,,,',
+            print('"Week 0 is the week BEFORE opening.",,,,,,,,,,,,',
                   file=tf)
-            print('"MovieName"', end='', file=tf)
+            print('"MovieName","OpeningFriday"', end='', file=tf)
             for i in range(11):
                 print(',"Week{0:d}"'.format(i), end='', file=tf)
             print(file=tf)
             for m in movie_count:
-                print('"', m.name, '"', sep='', end='', file=tf)
+                print('"', m.name, '","', m.opening_date.strftime("%Y-%m-%d"),
+                      '"', sep='', end='', file=tf)
                 for w in range(FIRST_WEEK, LAST_WEEK):
                     print(",{0:d}".format(movie_count[m][w]), end='', file=tf)
                 print(file=tf)
