@@ -226,7 +226,16 @@ for fn in files:
                 tname = tf.name
                 print("{0:s} has {1:d} entries.".format(name, len(dist)),
                       file=tf)
-                json.dump(OrderedDict(dist.most_common()), tf, indent=4)
+                TRIES = 3
+                for i in range(TRIES):
+                    try:
+                        # I'm guessing this fails on the word distribution.
+                        json.dump(OrderedDict(dist.most_common()), tf,
+                                  indent=4)
+                        break
+                    except Exception:
+                        print("Writing", name, "failed.  {}.".format("Giving up" if i == TRIES - 1 else "Retrying"))
+                        continue
             newname = "./reports/" + name + ".out"
             os.rename(tname, newname)
             os.chmod(newname, WORLD_READABLE)
