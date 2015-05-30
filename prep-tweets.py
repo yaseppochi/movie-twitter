@@ -85,7 +85,27 @@ LAST_WEEK = 10
 # replaced with the symbol @USER.  Third, hashtags are counted twice: once
 # as the hashtag, and once as the word without the hash.
 
-word_distribution = Counter()
+# #### Eventually we should use a database for everything (maybe MongoDB
+# for the tweets).  But for now we'll just start with what was the
+# word_distribution.
+
+from sqlalchemy import create_engine, Column, Integer, String, Sequence
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
+
+engine = create_engine("sqlite:///word-distribution.db")
+Base = declarative_base()
+
+class Word(Base):
+    __tablename__ = "words"
+    word = Column(String, Sequence("word_word_seq"), primary_key=True)
+    count = Column(Integer)
+
+if True:                                # #### For restartability.
+    Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
 
 # #### Combine these.
 #tweet_movies = {}
@@ -96,8 +116,9 @@ tweet_data = set()
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
 COUNT_REPORTS = [
-    ("DISTRIBUTION OF WORDS FOUND IN TWEETS",
-     "tweet-word-distribution", word_distribution),
+    # #### FIXME Need to output this.
+    # ("DISTRIBUTION OF WORDS FOUND IN TWEETS",
+    #  "tweet-word-distribution", word_distribution),
     # Need to refactor (or maybe define special json encoders).
     # ("#### fixme!", "movie-word-distribution", word_count),
     # ("#### fixme!", "movie-distribution", movie_count),
@@ -119,8 +140,7 @@ else:
     os.mkdir("./reports")
 
 def analyze_file(fileobject):
-    global word_count, movie_count, sampling_count, terms_count, \
-        tweet_data, word_distribution
+    global word_count, movie_count, sampling_count, terms_count, tweet_data
         # tweet_movies, movie_tweets
     s = f.read()
     start = 0
@@ -167,8 +187,17 @@ def analyze_file(fileobject):
             #    print(e)
             continue
 
+        # #### This could maybe be optimized?
+        session = Session()
         for w in tweet.words:
-            word_distribution[w] += 1
+            try:
+                word = session.query(Word).filter_by(word=w).one()
+            except NoResultFound:
+                word = Word(word=w, count=0)
+                session.add(word)
+            word.count += 1
+        session.commit()
+        session.close()
 
         #tweet_movies[idno] = []
         for m in movie.Movie.by_name.values():
@@ -198,6 +227,18 @@ for fn in files:
         # It should be optional to get JSON output or both JSON and CSV.
         # Code is at tag json-report.
         # #### The use of FIRST_WEEK and LAST_WEEK may be buggy!
+        with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
+            # For Windows portability.
+            tname = tf.name
+            print("{", file=tf)
+            session = Session()
+            for word in session.query(Word).order_by(-Word.count):
+                print("   ", word.word, ":", word.count, file=tf)
+            session.close()
+            print("}", file=tf)
+        newname = "./reports/tweet-word-distribution.out"
+        os.rename(tname, newname)
+        os.chmod(newname, WORLD_READABLE)
         with NamedTemporaryFile(mode="w", dir=".", delete=False) as tf:
             # For Windows portability.
             tname = tf.name
@@ -311,3 +352,8 @@ print("containing {0:d} unique tweets.".format(len(tweet_data)))
 #print("{0:d} tweets with no movie identified.".format(ncnt))  
 #print("should have matched while splitting: {}".format(should_match))
 #print("should not have matched while splitting: {}".format(should_not_match))
+session = Session()
+print("There are {0:d} words in the word distribution.".format(
+    session.query(Word).count()))
+session.close()
+
