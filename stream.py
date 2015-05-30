@@ -51,8 +51,8 @@ delay = None                            # delay == 0 means disconnect occured,
 
 signal.signal(signal.SIGHUP, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal)
-
 def generate_tweets(api):
+    # #### Can we catch signals and properly close the stream here?
     stream = twitter.TwitterStream(auth=api.auth)
     tweets = stream.statuses.filter(track=movies, stall_warnings=True)
     for tweet in tweets:

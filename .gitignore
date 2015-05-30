@@ -1,6 +1,7 @@
 ,,*
 __pycache__
 results
+report
 *.log
 *.json
 cifs*
