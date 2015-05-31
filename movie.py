@@ -43,7 +43,7 @@ class Movie(object):
             # #### Need to handle setting time and timezone.
             raise NotImplementedError(opening_date)
         if self.opening_date is not None:
-            raise ReinitializationError(self, 'date', date)
+            raise ReinitializationError(self.name, 'date', date)
         self.opening_date = date
 
     def _add_star_list(self, stars):
