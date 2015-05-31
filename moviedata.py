@@ -2,10 +2,10 @@ import datetime
 import itertools
 import pytz
 
-nytime = pytz.timezone('US/Eastern')
+nyzone = pytz.timezone('US/Eastern')
 
 DATES_MOVIES = [ # "movie",
-    [datetime.datetime(2015, 2, 20, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 2, 20, 9, tzinfo=nyzone),
      # Released on Feb. 27
      "The DUFF",
      "Hot Tub Time Machine 2",
@@ -14,7 +14,7 @@ DATES_MOVIES = [ # "movie",
      "Digging Up the Marrow",
      "Queen and Country",
      "Wild Tales"],
-    [datetime.datetime(2015, 2, 27, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 2, 27, 9, tzinfo=nyzone),
      # Released on Feb. 27
      "Focus",                            #  (2015)
      "The Lazarus Effect",
@@ -31,7 +31,7 @@ DATES_MOVIES = [ # "movie",
      "The Salvation",
      "Snow Girl and the Dark Crystal",
      "Wild Canaries"],
-    [datetime.datetime(2015, 3, 6, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 3, 6, 9, tzinfo=nyzone),
      # Released on Mar. 6
      "Chappie",
      "Unfinished Business",
@@ -43,7 +43,7 @@ DATES_MOVIES = [ # "movie",
      "Merchants of Doubt",
      "The Second Best Exotic Marigold Hotel",
      "These Final Hours"],
-    [datetime.datetime(2015, 3, 13, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 3, 13, 9, tzinfo=nyzone),
      # Released on Mar. 13
      "Cinderella", # (2015)
      "Run All Night",
@@ -53,7 +53,7 @@ DATES_MOVIES = [ # "movie",
      "Seymour: An Introduction",
      "The Tales of Hoffmann", # (2015 re-issue)
      "The Wrecking Crew"],
-    [datetime.datetime(2015, 3, 20, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 3, 20, 9, tzinfo=nyzone),
      # Released on Mar. 20
      "The Divergent Series: Insurgent",
      "Do You Believe?",
@@ -65,7 +65,7 @@ DATES_MOVIES = [ # "movie",
      "Shi Gu",
      "Spring",                           # (2015)
      "Zombeavers"],
-    [datetime.datetime(2015, 3, 27, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 3, 27, 9, tzinfo=nyzone),
      # Released on Mar. 27
      "Get Hard",
      "Home",                             # (2015)
@@ -78,7 +78,7 @@ DATES_MOVIES = [ # "movie",
      "Welcome to New York",
      "While We're Young",
      "White God"],
-    [datetime.datetime(2015, 4, 3, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 4, 3, 9, tzinfo=nyzone),
      # Released on Apr. 3
      "Furious 7",
      "5 to 7",
@@ -88,7 +88,7 @@ DATES_MOVIES = [ # "movie",
      "The Living",
      "SBK The-Movie",
      "Woman in Gold"],
-    [datetime.datetime(2015, 4, 10, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 4, 10, 9, tzinfo=nyzone),
      # Released on Apr. 10
      "The Longest Ride",
      "Clouds of Sils Maria",
@@ -98,7 +98,7 @@ DATES_MOVIES = [ # "movie",
      "Kill Me Three Times",
      "Rebels of the Neon God",           # (2015 re-release) 
      "The Sisterhood of Night"],
-    [datetime.datetime(2015, 4, 17, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 4, 17, 9, tzinfo=nyzone),
      # Released on April 17th (Friday)
      "Child 44",
      "Monkey Kingdom",
@@ -111,7 +111,7 @@ DATES_MOVIES = [ # "movie",
      "Monsters: Dark Continent",
      "The Road Within",
      "True Story"],
-    [datetime.datetime(2015, 4, 24, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 4, 24, 9, tzinfo=nyzone),
      # Released on April 24th (Friday) 
      "The Age of Adaline",
      "Little Boy",
@@ -122,7 +122,7 @@ DATES_MOVIES = [ # "movie",
      "Misery Loves Comedy",
      "WARx2",
      "The Water Diviner"],
-    [datetime.datetime(2015, 5, 1, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 5, 1, 9, tzinfo=nyzone),
      # Released on May 1st Friday
      "Avengers: Age of Ultron",
      # The 100-Year Old Man Who Climbed Out the Window and Disappeared
@@ -134,7 +134,7 @@ DATES_MOVIES = [ # "movie",
      "Ride",                             # (2015)
      "Tangerines",
      "Welcome to Me"],
-    [datetime.datetime(2015, 5, 8, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 5, 8, 9, tzinfo=nyzone),
      # Released on May 8th (Friday)
      "Hot Pursuit",
      "5 Flights Up",
@@ -148,7 +148,7 @@ DATES_MOVIES = [ # "movie",
      "Skin Trade",
      # "WARx2",                          # Not released on 4/24?
      "Sister Code"],
-    [datetime.datetime(2015, 5, 15, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 5, 15, 9, tzinfo=nyzone),
      # Released on May 15th (Friday)
      "Mad Max: Fury Road",
      "Pitch Perfect 2",
@@ -164,7 +164,7 @@ DATES_MOVIES = [ # "movie",
      "Know How",
      "One Cut, One Life",                # (on Wed.)
      "Our Man in Tehran"],
-    [datetime.datetime(2015, 5, 22, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 5, 22, 9, tzinfo=nyzone),
      # Released on May 22th (Friday)
      "Poltergeist",                      # (2015)
      "Tomorrowland",
@@ -174,7 +174,7 @@ DATES_MOVIES = [ # "movie",
      "Love At First Sight",
      "Sunshine Superman",
      "When Marnie Was There"],
-    [datetime.datetime(2015, 5, 29, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 5, 29, 9, tzinfo=nyzone),
      # Released on May 29th (Friday)
      "Aloha",
      "San Andreas",
@@ -182,11 +182,60 @@ DATES_MOVIES = [ # "movie",
      "Gemma Bovary",
      "Heaven Knows What",
      "Results"],
+    # *Released on June 5th, Friday: *
+    [datetime.datetime(2015, 6, 5, 9, tzinfo=nyzone),
+     "Entourage",
+     "Insidious Chapter 3",
+     "Spy",
+     "Every Last Child",
+     "How to Save Us",
+     "Hungry Hearts",
+     "Love & Mercy",
+     "Pigeon",
+     "Police Story: Lockdown",
+     "Testament of Youth"],
+    # *Released on June 12 Friday: *
+    [datetime.datetime(2015, 6, 12, 9, tzinfo=nyzone),
+     "Jurassic World",
+     "11th Hour",
+     "Me and Earl and the Dying Girl",
+     "Set Fire to the Stars",
+     "Soaked in Bleach",
+     "WARx2",
+     "The Wolfpack"],
+     #*Released on June 19 Friday: *
+     [datetime.datetime(2015, 6, 19, 9, tzinfo=nyzone),
+      "Dope",
+      "Inside Out",
+      "Dark Awakening",
+      "Eden",
+      "Gabriel",
+      "Infinitely Polar Bear",
+      "Manglehorn",
+      "The Overnight",
+      "The Tribe"],
+      # *Released on June 26 Friday: *
+      [datetime.datetime(2015, 6, 26, 9, tzinfo=nyzone),
+       "Max",                           # (2015)
+       "Ted 2",
+       "7 Minutes",
+       "The Algerian",
+       "Batkid Begins",
+       "Big Game",
+       "Felt",
+       "The Little Death",
+       "Murder in the Park",
+       "The Pardon",
+       "Runoff"],
     ]
 
 MOVIES = []
-for date in DATES_MOVIES:
-    MOVIES.extend(date[1:])
+now = datetime.datetime.now(tz=nyzone)
+for date_movies in DATES_MOVIES:
+    date = date_movies[0]
+    if (date + datetime.timedelta(70) >= now
+        and date - datetime.timedelta(7) <= now):
+        MOVIES.extend(date_movies[1:])
 
 STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
 
