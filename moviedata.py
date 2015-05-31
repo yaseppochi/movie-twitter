@@ -201,7 +201,7 @@ DATES_MOVIES = [ # "movie",
      "Me and Earl and the Dying Girl",
      "Set Fire to the Stars",
      "Soaked in Bleach",
-     "WARx2",
+     #"WARx2",
      "The Wolfpack"],
      #*Released on June 19 Friday: *
      [datetime.datetime(2015, 6, 19, 9, tzinfo=nyzone),
