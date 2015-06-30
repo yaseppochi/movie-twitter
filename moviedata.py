@@ -16,7 +16,7 @@ DATES_MOVIES = [ # "movie",
      "Wild Tales"],
     [datetime.datetime(2015, 2, 27, 9, tzinfo=nyzone),
      # Released on Feb. 27
-     "Focus",                            #  (2015)
+     "Focus",                           # (2015)
      "The Lazarus Effect",
      "'71",
      "Deli Man",
@@ -45,13 +45,13 @@ DATES_MOVIES = [ # "movie",
      "These Final Hours"],
     [datetime.datetime(2015, 3, 13, 9, tzinfo=nyzone),
      # Released on Mar. 13
-     "Cinderella", # (2015)
+     "Cinderella",                      # (2015)
      "Run All Night",
      "Eva",
      "Home Sweet Hell",
      "It Follows",
      "Seymour: An Introduction",
-     "The Tales of Hoffmann", # (2015 re-issue)
+     "The Tales of Hoffmann",           # (2015 re-issue)
      "The Wrecking Crew"],
     [datetime.datetime(2015, 3, 20, 9, tzinfo=nyzone),
      # Released on Mar. 20
@@ -60,15 +60,15 @@ DATES_MOVIES = [ # "movie",
      "The Gunman",
      "Can't Stand Losing You: Surviving the Police",
      "Danny Collins",
-     "Kumiko, The Treasure Hunter",      # (on Wed.)
-     "Love and Lost",                    # (Shi Gu)
+     "Kumiko, The Treasure Hunter",     # (on Wed.)
+     "Love and Lost",                   # (Shi Gu)
      "Shi Gu",
-     "Spring",                           # (2015)
+     "Spring",                          # (2015)
      "Zombeavers"],
     [datetime.datetime(2015, 3, 27, 9, tzinfo=nyzone),
      # Released on Mar. 27
      "Get Hard",
-     "Home",                             # (2015)
+     "Home",                            # (2015)
      "Cupcakes",
      "A Girl Like Her",
      "Man From Reno",
@@ -96,7 +96,7 @@ DATES_MOVIES = [ # "movie",
      "Ex Machina",
      "Freetown",
      "Kill Me Three Times",
-     "Rebels of the Neon God",           # (2015 re-release) 
+     "Rebels of the Neon God",          # (2015 re-release) 
      "The Sisterhood of Night"],
     [datetime.datetime(2015, 4, 17, 9, tzinfo=nyzone),
      # Released on April 17th (Friday)
@@ -120,7 +120,7 @@ DATES_MOVIES = [ # "movie",
      "Brotherly Love",
      "Kung Fu Killer",
      "Misery Loves Comedy",
-     "WARx2",
+     # "WARx2",
      "The Water Diviner"],
     [datetime.datetime(2015, 5, 1, 9, tzinfo=nyzone),
      # Released on May 1st Friday
@@ -130,8 +130,8 @@ DATES_MOVIES = [ # "movie",
      "Far from Men",
      "Far from the Madding Crowd",
      "Hyena",
-     "Iris",                             # (2015)
-     "Ride",                             # (2015)
+     "Iris",                            # (2015)
+     "Ride",                            # (2015)
      "Tangerines",
      "Welcome to Me"],
     [datetime.datetime(2015, 5, 8, 9, tzinfo=nyzone),
@@ -139,20 +139,20 @@ DATES_MOVIES = [ # "movie",
      "Hot Pursuit",
      "5 Flights Up",
      "The D Train",
-     "I Am Big Bird",                    # (on Wed.)
+     "I Am Big Bird",                   # (on Wed.)
      "In the Name of my Daughter",
      "Maggie",
      "Noble",
      "Saint Laurent",
-     "The Seven Five",                   # (on Thu.)
+     "The Seven Five",                  # (on Thu.)
      "Skin Trade",
-     # "WARx2",                          # Not released on 4/24?
+     "WARx2",                           # Not released on 4/24?
      "Sister Code"],
     [datetime.datetime(2015, 5, 15, 9, tzinfo=nyzone),
      # Released on May 15th (Friday)
      "Mad Max: Fury Road",
      "Pitch Perfect 2",
-     "Animals",                          # (2015)
+     "Animals",                         # (2015)
      "The Connection",
      "Every Secret Thing",
      "The Film Critic",
@@ -160,13 +160,13 @@ DATES_MOVIES = [ # "movie",
      "I'll See You In My Dreams",
      "Set Fire to the Stars",
      "Where Hope Grows",
-     "Forbidden Films",                  # (on Wed.)
+     "Forbidden Films",                 # (on Wed.)
      "Know How",
-     "One Cut, One Life",                # (on Wed.)
+     "One Cut, One Life",               # (on Wed.)
      "Our Man in Tehran"],
     [datetime.datetime(2015, 5, 22, 9, tzinfo=nyzone),
      # Released on May 22th (Friday)
-     "Poltergeist",                      # (2015)
+     "Poltergeist",                     # (2015)
      "Tomorrowland",
      "Aloft",
      "Chocolate City",
@@ -203,31 +203,77 @@ DATES_MOVIES = [ # "movie",
      "Soaked in Bleach",
      #"WARx2",
      "The Wolfpack"],
-     #*Released on June 19 Friday: *
-     [datetime.datetime(2015, 6, 19, 9, tzinfo=nyzone),
-      "Dope",
-      "Inside Out",
-      "Dark Awakening",
-      "Eden",
-      "Gabriel",
-      "Infinitely Polar Bear",
-      "Manglehorn",
-      "The Overnight",
-      "The Tribe"],
-      # *Released on June 26 Friday: *
-      [datetime.datetime(2015, 6, 26, 9, tzinfo=nyzone),
-       "Max",                           # (2015)
-       "Ted 2",
-       "7 Minutes",
-       "The Algerian",
-       "Batkid Begins",
-       "Big Game",
-       "Felt",
-       "The Little Death",
-       "Murder in the Park",
-       "The Pardon",
-       "Runoff"],
-    ]
+    #*Released on June 19 Friday: *
+    [datetime.datetime(2015, 6, 19, 9, tzinfo=nyzone),
+     "Dope",
+     "Inside Out",
+     "Dark Awakening",
+     "Eden",
+     "Gabriel",
+     "Infinitely Polar Bear",
+     "Manglehorn",
+     "The Overnight",
+     "The Tribe"],
+    # *Released on June 26 Friday: *
+    [datetime.datetime(2015, 6, 26, 9, tzinfo=nyzone),
+     "Max",                             # (2015)
+     "Ted 2",
+     "7 Minutes",
+     "The Algerian",
+     "Batkid Begins",
+     "Big Game",
+     "Felt",
+     "The Little Death",
+     "Murder in the Park",
+     "The Pardon",
+     "Runoff"],
+    [datetime.datetime(2015, 7, 3, 9, tzinfo=nyzone),
+    # *Released on July 3rd, Friday: *
+    "Magic Mike XXL",                   # (on Wed.)
+    "Terminator: Genisys",              # (on Wed.)
+    "Amy",
+    "Cartel Land",
+    "Jackie & Ryan",
+    "Jimmy's Hall",
+    "Mala Mala"],                        # (on Wed.)
+    [datetime.datetime(2015, 7, 10, 9, tzinfo=nyzone),
+    # *Released on July 10th, Friday: *",
+    "The Gallows",
+    "Minions",
+    "Self/Less",
+    "Do I Sound Gay?",
+    "Nowitzki",
+    "The Suicide Theory",
+    "Tangerine"],
+    [datetime.datetime(2015, 7, 17, 9, tzinfo=nyzone),
+    # *Released on July 17th, Friday: *
+    "Ant-Man",
+    "Trainwreck",
+    "Bonobos: Back to the Wild",
+    "Catch Me Daddy",
+    "Irrational Man",
+    "The Look of Silence",
+    "Mr. Holmes",
+    "The Stanford Prison Experiment"],
+    [datetime.datetime(2015, 7, 24, 9, tzinfo=nyzone),
+    # *Released on July 24th, Friday: *
+    "Paper Towns",
+    "Pixels",
+    "Southpaw",
+    "Big Significant Things",
+    "Phoenix",                          # (2015)
+    "Unexpected",
+    "The Vatican Tapes",
+    "WARx2"],
+    [datetime.datetime(2015, 7, 31, 9, tzinfo=nyzone),
+    # *Released on July 31rd, Friday: *
+    "*Mission: Impossible - Rogue Nation*",
+    "Vacation",                         # (on Wed.)
+    "Best of Enemies",
+    "The End of the Tour",
+    "A LEGO Brickumentary",
+    "Listen to Me Marlon"],             # (on Wed.)
+]
 
 MOVIES = []
 now = datetime.datetime.now(tz=nyzone)
