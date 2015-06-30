@@ -264,7 +264,7 @@ DATES_MOVIES = [ # "movie",
     "Phoenix",                          # (2015)
     "Unexpected",
     "The Vatican Tapes",
-    "WARx2"],
+    #"WARx2"],
     [datetime.datetime(2015, 7, 31, 9, tzinfo=nyzone),
     # *Released on July 31rd, Friday: *
     "*Mission: Impossible - Rogue Nation*",
