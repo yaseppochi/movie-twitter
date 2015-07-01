@@ -10,6 +10,7 @@
 from moviedata import MOVIES, PUNCT # STOPLIST also available.
 from movie import track_join
 from myauth import get_my_api
+import errno
 import http.client
 import json
 import os
@@ -38,6 +39,12 @@ for name in signal_names:
 def handle_signal(signum, frame):
     """Handle signal by raising OSError."""
     raise OSError(signum, signal_dict[signum], "<OS signal>")
+
+# We can't really use this?
+# errno_names = [name for name in dir(errno) if name.startswith("E")]
+# errno_dict = {}
+# for name in errno_names:
+#     errno_dict[getattr(errno,name)] = name
 
 class HangupException(Exception):
     pass
@@ -126,8 +133,7 @@ while working:
         need_connection = True
     except OSError as e:
         print(e)
-        # 104 is Apple-specific ENOTRECOVERABLE "Connection reset by peer"
-        if e.errno != signal.SIGHUP and e.errno != 104:
+        if e.errno != signal.SIGHUP and e.errno != errno.ENOTRECOVEREABLE:
             working = False
         else:
             need_connection = True
