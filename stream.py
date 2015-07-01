@@ -126,7 +126,8 @@ while working:
         need_connection = True
     except OSError as e:
         print(e)
-        if e.errno != signal.SIGHUP:
+        # 104 is Apple-specific ENOTRECOVERABLE "Connection reset by peer"
+        if e.errno != signal.SIGHUP and e.errno != 104:
             working = False
         else:
             need_connection = True
