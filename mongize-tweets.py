@@ -1,13 +1,15 @@
 #!/usr/bin/env python3.4
 
 """
-Examine a tweet stream and sort by movie.
+Examine a tweet stream and store it to a MongoDB database.
 The tweet stream should be a sequence of tweets in JSON format.
-Output is a sorted list of tweet IDs with corresponding movies.
 """
 
 # You can ignore comments beginning with "TODO:".
-# TODO: This program is based on tweetcheck.py.  Abstract the main loop.
+# #### This program is based on prep-tweets.py.  The common parts should be
+# abstracted into a separate module.  prep-tweets.py should be updated to
+# take its input from the Mongo-ized database.
+# See also TODOs in prep-tweets.py.
 
 from collections import Counter, OrderedDict, defaultdict
 from tweetdata import *
@@ -26,9 +28,11 @@ track_movie_tweets = False
 print_tweets_as_json = False
 
 # Set up the input file.  STREAM refers to future use with Twitter API.
-parser = argparse.ArgumentParser(description="Examine a file of tweets (JSON)")
-parser.add_argument('FILES', type=str, help="Files of JSON tweets", nargs='*')
-parser.add_argument('--dataroot', type=str, help="Data root directory")
+parser = argparse.ArgumentParser(description="Examine a stream of JSON tweets")
+parser.add_argument('FILES', type=str,
+                    help="Files of JSON tweets", nargs='*')
+parser.add_argument('--dataroot', type=str,
+                    help="Data root directory (ignored in favor of FILES)")
 args = parser.parse_args()
 
 def traverse_tweet_data(root):
@@ -42,10 +46,14 @@ if not args.FILES:
 else:
     files = args.FILES
 
-#print(*files, sep="\n")
-
 # Set up the JSON decoder.
+# #### I wonder if it would be worth fixing the Twitter module to store
+# directly into MongoDB.
 decoder = json.JSONDecoder()
+
+# Set up MongoDB client.
+from pymongo import MongoClient
+mongo = MongoClient("mongodb://localhost/anna")
 
 # Set parameters for data extraction.
 valence_terms = ['loved', 'fun', 'like', 'hated', "love", "liked", "good",
