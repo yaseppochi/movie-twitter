@@ -42,8 +42,6 @@ if not args.FILES:
 else:
     files = args.FILES
 
-#print(*files, sep="\n")
-
 # Set up the JSON decoder.
 decoder = json.JSONDecoder()
 
