@@ -113,6 +113,7 @@ tweet_data = set()
 
 print("TEXT OF TWEETS WITH lang ATTRIBUTE != en.\n")
 
+# #### COUNT_REPORTS is broken, the *_count variables are never initialized.
 COUNT_REPORTS = [
     # #### FIXME Need to output this.
     # ("DISTRIBUTION OF WORDS FOUND IN TWEETS",

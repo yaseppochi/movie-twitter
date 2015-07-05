@@ -27,6 +27,7 @@ import moviedata
 track_movie_tweets = False
 print_tweets_as_json = False
 WORLD_READABLE = 0o644
+# #### COUNT_REPORTS is broken, the *_count variables are never initialized.
 COUNT_REPORTS = [
     # #### FIXME Need to output this.
     # ("DISTRIBUTION OF WORDS FOUND IN TWEETS",
