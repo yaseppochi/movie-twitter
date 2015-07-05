@@ -27,25 +27,8 @@ import moviedata
 track_movie_tweets = False
 print_tweets_as_json = False
 WORLD_READABLE = 0o644
-# #### COUNT_REPORTS is broken, the *_count variables are never initialized.
-COUNT_REPORTS = [
-    # #### FIXME Need to output this.
-    # ("DISTRIBUTION OF WORDS FOUND IN TWEETS",
-    #  "tweet-word-distribution", word_distribution),
-    # Need to refactor (or maybe define special json encoders).
-    # ("#### fixme!", "movie-word-distribution", word_count),
-    # ("#### fixme!", "movie-distribution", movie_count),
-    ("DISTRIBUTION OF TERMS USED FOR FILTERING",
-     "filter-terms-distribution", terms_count),
-    ("DISTRIBUTION OF LOCATION-SPECIFIC TERMS",
-     "location-available-counts", location_count),
-    ("DISTRIBUTION OF INAPPROPRIATE TWEETS",
-     "sampling-counts", sampling_count),
-    ("DISTRIBUTION OF OUT-OF-SAMPLE-PERIOD TWEETS",
-     "untimely-counts", untimely_count)
-    ]
 
-class MongizeParser(ArgumentParser):
+class MongizeParser(argparse.ArgumentParser):
     def __init__(self):
         super().__init__(description="Examine a stream of JSON tweets")
         self.add_argument('FILES', type=str,
@@ -53,31 +36,35 @@ class MongizeParser(ArgumentParser):
         self.add_argument('--dataroot', type=str,
                           help="Data root directory (ignored in favor of FILES)")
 
-def handle_file(fileobject):
-    global sampling_count
+def handle_file(fileobject, collection):
+    """
+    Read a stream of tweets from fileobject and add them to collection.
+    fileobject is an open file object.
+    collection is a collection in an open MongoDB.
+    #### Probably fileobject should be opened inside this function from a
+    file name.
+    """
+
     s = fileobject.read()
     start = 0
     end = len(s)
+    count = 0
     while True:
         try:
             status, offset = decoder.raw_decode(s[start:start+50000])
             start = start + offset + 1
-            sampling_count["JSON objects"] += 1
+            # Give status a serial number.  This will be used to estimate
+            # skip intervals.
+            status['anna:serial'] = count
+            collection.insert_one(status)
+            count += 1
         except Exception as e:
-            # Currently there's no real point in printing the exception,
-            # since we bail out in any case.
-            # print("Error:", e)
+            print("Error:", e)
             # print("|", s[start:start+100])
-            print("\nnext = ", start, "end =", end, "\n")
+            print("\nFile count =", count, "next =", start, "end =", end, "\n")
             # TODO: If the decoder raises, start doesn't get incremented.  So
             # there's nothing to do but bail out.
             break
-        #analyze_tweet(tweet)
-
-class Word(Base):
-    __tablename__ = "words"
-    word = Column(String, Sequence("word_word_seq"), primary_key=True)
-    count = Column(Integer)
 
 def traverse_tweet_data(root):
     return (os.path.join(root, "results", stamp, json)
@@ -114,7 +101,6 @@ def analyze_tweet(status, Session):
                     pass
         #else:
         #    print(e)
-        continue
     # #### This could maybe be optimized?
     # #### After refactoring, Session isn't visible in this suite.
     session = Session()
@@ -145,6 +131,7 @@ def analyze_tweet(status, Session):
             else:
                 untimely_count[m.name] += 1
 
+# #### This could be used at the end of the __main__ script.
 def old_main():
     # Set parameters for data extraction.
     valence_terms = ['loved', 'fun', 'like', 'hated', "love", "liked", "good",
@@ -355,7 +342,8 @@ def old_main():
         session.query(Word).count()))
     session.close()
 
-if __name == "__main__":
+if __name__ == "__main__":
+
     args = MongizeParser().parse_args()
     if not args.FILES:
         files = list(traverse_tweet_data(args.dataroot))
@@ -368,6 +356,28 @@ if __name == "__main__":
     decoder = json.JSONDecoder()
 
     # Set up MongoDB client.
-    mongo = MongoClient("mongodb://localhost/anna")
+    mongo = MongoClient("mongodb://localhost/")
+    db = mongo.anna
+    collection = db.status_stream
+    
+    # Read statuses.
+    for fn in files:
+        with open(fn) as fo:
+            handle_file(fo, collection)
 
-    #old_main()
+    # Report on the collection.
+    print("Records in collection =", collection.count())
+    print("Non-tweet records in collection =",
+          collection.count({"id" : {"$exists" : False}}))
+    for status in collection.find({"id" : {"$exists" : False}}):
+        print("Non-tweet =", status)
+        serial = status["anna:serial"]
+        print("Previous =",
+              collection.find_one({"anna:serial" : serial - 1})["created_at"])
+        print("Next =",
+              collection.find_one({"anna:serial" : serial + 1})["created_at"])
+
+    # Tear down the database.
+    db.drop_collection(collection)
+    mongo.close()
+
