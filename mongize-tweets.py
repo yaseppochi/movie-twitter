@@ -57,26 +57,32 @@ def handle_file(fileobject, collection):
             # skip intervals.
             status['anna:serial'] = count
             if "id" in status:
-                original = collection.find_one({"id" : status["id"]})
-                if original is not None:
-                    status['anna:duplicate'] = original["_id"]
                 if "retweeted_status" in status:
                     original = collection.find_one({"id" : status["retweeted_status"]["id"]})
                     if original:
                         status['anna:original'] = original["_id"]
                         # #### Should update original's retweet count.
                     else:
+                        status["retweeted_status"]["anna:inferred"] = True
                         result = collection.insert_one(status["retweeted_status"])
                         status['anna:original'] = result.inserted_id
                         # #### Should replace retweeted status with
                         # locally different fields.
+                original = collection.find_one({"id" : status["id"]})
+                if original is not None:
+                    # #### By checking anna:inferred attribute can determine
+                    # which is actual original.  Need to do post-processing
+                    # anyway for various reasons (e.g., checking duplicates
+                    # for equality and cleaning retweeted_status attributes),
+                    # so this is good enough.
+                    status["anna:duplicate"] = original["_id"]
             collection.insert_one(status)
             count += 1
         except Exception as e:
             if start < end:
                 print("Error:", e)
             # print("|", s[start:start+100])
-            print("File count =", count, "next =", start, "end =", end, "\n")
+            print("Records read =", count, "next =", start, "end =", end, "\n")
             # TODO: If the decoder raises, start doesn't get incremented.  So
             # there's nothing to do but bail out.
             break
@@ -374,6 +380,11 @@ if __name__ == "__main__":
     mongo = MongoClient("mongodb://localhost/")
     db = mongo.anna
     collection = db.status_stream
+    collection.create_index("id", sparse=True)
+    # #### Probably should do this with a timestamp instead.  That would
+    # be more accurate and even if it involves running over the whole
+    # database, this only needs to be done offline and occasionally.
+    collection.create_index("anna:serial", sparse=True)
     
     # Read statuses.
     for fn in files:
