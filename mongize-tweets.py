@@ -56,12 +56,27 @@ def handle_file(fileobject, collection):
             # Give status a serial number.  This will be used to estimate
             # skip intervals.
             status['anna:serial'] = count
+            if "id" in status:
+                original = collection.find_one({"id" : status["id"]})
+                if original is not None:
+                    status['anna:duplicate'] = original["_id"]
+                if "retweeted_status" in status:
+                    original = collection.find_one({"id" : status["retweeted_status"]["id"]})
+                    if original:
+                        status['anna:original'] = original["_id"]
+                        # #### Should update original's retweet count.
+                    else:
+                        result = collection.insert_one(status["retweeted_status"])
+                        status['anna:original'] = result.inserted_id
+                        # #### Should replace retweeted status with
+                        # locally different fields.
             collection.insert_one(status)
             count += 1
         except Exception as e:
-            print("Error:", e)
+            if start < end:
+                print("Error:", e)
             # print("|", s[start:start+100])
-            print("\nFile count =", count, "next =", start, "end =", end, "\n")
+            print("File count =", count, "next =", start, "end =", end, "\n")
             # TODO: If the decoder raises, start doesn't get incremented.  So
             # there's nothing to do but bail out.
             break
@@ -369,12 +384,18 @@ if __name__ == "__main__":
     print("Records in collection =", collection.count())
     print("Non-tweet records in collection =",
           collection.count({"id" : {"$exists" : False}}))
+    print("Duplicates in collection =",
+          collection.count({"anna:duplicate" : {"$exists" : True}}))
+    print("Retweets in collection =",
+          collection.count({"retweeted_status" : {"$exists" : True}}))
+    print("Retweet has original tweet in collection =",
+          collection.count({"anna:original" : {"$exists" : True}}))
     for status in collection.find({"id" : {"$exists" : False}}):
         print("Non-tweet =", status)
         serial = status["anna:serial"]
-        print("Previous =",
+        print("    Previous =",
               collection.find_one({"anna:serial" : serial - 1})["created_at"])
-        print("Next =",
+        print("    Next     =",
               collection.find_one({"anna:serial" : serial + 1})["created_at"])
 
     # Tear down the database.
