@@ -377,7 +377,9 @@ if __name__ == "__main__":
     decoder = json.JSONDecoder()
 
     # Set up MongoDB client.
-    mongo = MongoClient("mongodb://localhost/")
+    # Linux version doesn't like the "mongodb://localhost/" URL, but the
+    # host[/dbname] style works on Mac too.
+    mongo = MongoClient("localhost")
     db = mongo.anna
     collection = db.status_stream
     collection.create_index("id", sparse=True)
