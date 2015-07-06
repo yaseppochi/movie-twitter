@@ -406,10 +406,13 @@ if __name__ == "__main__":
     for status in collection.find({"id" : {"$exists" : False}}):
         print("Non-tweet =", status)
         serial = status["anna:serial"]
-        print("    Previous =",
-              collection.find_one({"anna:serial" : serial - 1})["created_at"])
-        print("    Next     =",
-              collection.find_one({"anna:serial" : serial + 1})["created_at"])
+        try:
+            print("    Previous =",
+                  collection.find_one({"anna:serial" : serial - 1})["created_at"])
+            print("    Next     =",
+                  collection.find_one({"anna:serial" : serial + 1})["created_at"])
+        except:
+            print("    Couldn't get Previous or Next.  Multiple limits?")
 
     # Tear down the database.
     db.drop_collection(collection)
