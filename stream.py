@@ -191,6 +191,7 @@ while working:
         else:
             working = False             # Be cautious, don't know what it is!
     except (urllib.error.HTTPError,
+            urllib.error.URLError,      # Temporary failure in name resolution
             http.client.HTTPException,  # BadStatusLine (empty)
             ) as e:
         print(type(e))
