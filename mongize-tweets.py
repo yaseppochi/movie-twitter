@@ -93,6 +93,15 @@ def traverse_tweet_data(root):
             for json in os.listdir(os.path.join(root, "results", stamp))
             if json.startswith("stream-") and json.endswith(".json"))
 
+def check_available(fspath, requested_reserve):
+    """
+    Return space available relative to requested_reserve on fspath.
+    Returns the difference in bytes.
+    """
+
+    stat = os.statvfs(fspath)
+    return stat.f_bfree * stat.bsize - requested_reserve
+
 def analyze_tweet(status, Session):
     global word_count, movie_count, sampling_count, terms_count, tweet_data
     # tweet_movies, movie_tweets
@@ -390,6 +399,14 @@ if __name__ == "__main__":
     
     # Read statuses.
     for fn in files:
+        available = check_available(fn, 4*1024*1024*1024)
+        if available < 0:
+            with open("remaining.files.list", "w") as rfl:
+                print("Current file =", fn, file=rfl)
+                print("File list =\n{}\n".format(files[files.index(fn):]),
+                      file=rfl)
+            break
+        print("Available space for 
         with open(fn) as fo:
             handle_file(fo, collection)
 
