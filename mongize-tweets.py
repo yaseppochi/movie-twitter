@@ -433,7 +433,5 @@ if __name__ == "__main__":
         except:
             print("    Couldn't get Previous or Next.  Multiple limits?")
 
-    # Tear down the database.
-    db.drop_collection(collection)
     mongo.close()
 
