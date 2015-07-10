@@ -403,8 +403,10 @@ if __name__ == "__main__":
         if available < 0:
             with open("remaining.files.list", "w") as rfl:
                 print("Current file =", fn, file=rfl)
-                print("File list =\n{}\n".format(files[files.index(fn):]),
-                      file=rfl)
+                # Files is a partially exhausted generator object!
+                # Yay, Python!
+                # We could also iterate print, making prettier output.
+                print("File list =\n{}\n".format(list(files)), file=rfl)
             break
         print("Available space for {} is {}.", fn, available)
         with open(fn) as fo:
