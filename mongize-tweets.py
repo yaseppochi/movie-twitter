@@ -40,10 +40,6 @@ def handle_signal(signum, frame):
     """Handle signal by raising OSError."""
     raise OSError(signum, signal_dict[signum], "<OS signal>")
 
-# I don't think we need to handle SIGHUP.
-# signal.signal(signal.SIGHUP, handle_signal)
-signal.signal(signal.SIGTERM, handle_signal)
-
 class MongizeParser(argparse.ArgumentParser):
     def __init__(self):
         super().__init__(description="Examine a stream of JSON tweets")
@@ -415,6 +411,10 @@ if __name__ == "__main__":
     # database, this only needs to be done offline and occasionally.
     collection.create_index("anna:serial", sparse=True)
     
+    # I don't think we need to handle SIGHUP.
+    # signal.signal(signal.SIGHUP, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
     # Read statuses.
     try:
         for fn in files:
