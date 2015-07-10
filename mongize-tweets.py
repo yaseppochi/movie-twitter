@@ -100,7 +100,7 @@ def check_available(fspath, requested_reserve):
     """
 
     stat = os.statvfs(fspath)
-    return stat.f_bfree * stat.bsize - requested_reserve
+    return stat.f_bfree * stat.f_bsize - requested_reserve
 
 def analyze_tweet(status, Session):
     global word_count, movie_count, sampling_count, terms_count, tweet_data
