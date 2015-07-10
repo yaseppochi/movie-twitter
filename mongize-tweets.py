@@ -22,6 +22,7 @@ import os
 import os.path
 #import pytz
 #import re
+import signal
 import sys
 
 track_movie_tweets = False
