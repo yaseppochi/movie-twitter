@@ -96,7 +96,7 @@ def handle_file(fileobject, collection):
                     status["anna:duplicate"] = original["_id"]
             collection.insert_one(status)
             count += 1
-        except Exception as e:
+        except (OSError, Exception) as e:
             if start < end:
                 print("Error:", e)
             # print("|", s[start:start+100])
