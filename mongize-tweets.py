@@ -401,7 +401,7 @@ if __name__ == "__main__":
     # Read statuses.
     try:
         for fn in files:
-            available = check_available(fn, 4*GB)
+            available = check_available("/home/steve/lv/mongodb", 4*GB)
             if available < 0:
                 break
             print("Available space for {} is {}, about {}GB.".format(fn,
