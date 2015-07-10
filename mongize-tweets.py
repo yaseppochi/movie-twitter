@@ -18,8 +18,8 @@ import argparse
 import json
 import movie
 import moviedata
-#import os
-#import os.path
+import os
+import os.path
 #import pytz
 #import re
 #import sys
