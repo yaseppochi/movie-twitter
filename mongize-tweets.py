@@ -22,7 +22,7 @@ import os
 import os.path
 #import pytz
 #import re
-#import sys
+import sys
 
 track_movie_tweets = False
 print_tweets_as_json = False
@@ -409,6 +409,7 @@ if __name__ == "__main__":
                 print("File list =\n{}\n".format(list(files)), file=rfl)
             break
         print("Available space for {} is {}.", fn, available)
+        sys.stdout.flush()
         with open(fn) as fo:
             handle_file(fo, collection)
 
