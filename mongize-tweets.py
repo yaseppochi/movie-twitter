@@ -408,7 +408,7 @@ if __name__ == "__main__":
                 # We could also iterate print, making prettier output.
                 print("File list =\n{}\n".format(list(files)), file=rfl)
             break
-        print("Available space for {} is {}.", fn, available)
+        print("Available space for {} is {}.".format(fn, available))
         sys.stdout.flush()
         with open(fn) as fo:
             handle_file(fo, collection)
