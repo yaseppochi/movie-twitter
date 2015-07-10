@@ -36,6 +36,8 @@ class MongizeParser(argparse.ArgumentParser):
                           help="Files of JSON tweets", nargs='*')
         self.add_argument('--dataroot', type=str,
                           help="Data root directory (ignored in favor of FILES)")
+        self.add_argument('--reserve', type=int, default=4,
+                          help="Space in GB to reserve in MongoDB filesystem")
 
 def handle_file(fileobject, collection):
     """
@@ -401,7 +403,8 @@ if __name__ == "__main__":
     # Read statuses.
     try:
         for fn in files:
-            available = check_available("/home/steve/lv/mongodb", 4*GB)
+            available = check_available("/home/steve/lv/mongodb",
+                                        args.reserve * GB)
             if available < 0:
                 break
             print("Available space for {} is {}, about {}GB.".format(fn,
