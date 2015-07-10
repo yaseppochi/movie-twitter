@@ -408,7 +408,7 @@ if __name__ == "__main__":
             if available < 0:
                 break
             print("Available space for {} is {}, about {}GB.".format(fn,
-                                                                     available
+                                                                     available,
                                                                      available//GB))
             sys.stdout.flush()
             with open(fn) as fo:
