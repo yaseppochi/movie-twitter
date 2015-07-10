@@ -27,6 +27,7 @@ import sys
 track_movie_tweets = False
 print_tweets_as_json = False
 WORLD_READABLE = 0o644
+GB = 1024 * 1024 * 1024
 
 class MongizeParser(argparse.ArgumentParser):
     def __init__(self):
@@ -399,7 +400,7 @@ if __name__ == "__main__":
     
     # Read statuses.
     for fn in files:
-        available = check_available(fn, 4*1024*1024*1024)
+        available = check_available(fn, 4*GB)
         if available < 0:
             with open("remaining.files.list", "w") as rfl:
                 print("Current file =", fn, file=rfl)
@@ -408,7 +409,9 @@ if __name__ == "__main__":
                 # We could also iterate print, making prettier output.
                 print("File list =\n{}\n".format(list(files)), file=rfl)
             break
-        print("Available space for {} is {}.".format(fn, available))
+        print("Available space for {} is {}, about {}GB.".format(fn,
+                                                                 available
+                                                                 available//GB))
         sys.stdout.flush()
         with open(fn) as fo:
             handle_file(fo, collection)
