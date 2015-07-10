@@ -29,6 +29,20 @@ print_tweets_as_json = False
 WORLD_READABLE = 0o644
 GB = 1024 * 1024 * 1024
 
+signal_names = [name for name in dir(signal)
+                if name.startswith("SIG") and not name.startswith("SIG_")]
+signal_dict = {}
+for name in signal_names:
+    signal_dict[getattr(signal,name)] = name
+
+def handle_signal(signum, frame):
+    """Handle signal by raising OSError."""
+    raise OSError(signum, signal_dict[signum], "<OS signal>")
+
+# I don't think we need to handle SIGHUP.
+# signal.signal(signal.SIGHUP, handle_signal)
+signal.signal(signal.SIGTERM, handle_signal)
+
 class MongizeParser(argparse.ArgumentParser):
     def __init__(self):
         super().__init__(description="Examine a stream of JSON tweets")
