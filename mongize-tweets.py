@@ -399,43 +399,45 @@ if __name__ == "__main__":
     collection.create_index("anna:serial", sparse=True)
     
     # Read statuses.
-    for fn in files:
-        available = check_available(fn, 4*GB)
-        if available < 0:
-            with open("remaining.files.list", "w") as rfl:
-                print("Current file =", fn, file=rfl)
-                # Files is a partially exhausted generator object!
-                # Yay, Python!
-                # We could also iterate print, making prettier output.
-                print("File list =\n{}\n".format(list(files)), file=rfl)
-            break
-        print("Available space for {} is {}, about {}GB.".format(fn,
-                                                                 available
-                                                                 available//GB))
-        sys.stdout.flush()
-        with open(fn) as fo:
-            handle_file(fo, collection)
+    try:
+        for fn in files:
+            available = check_available(fn, 4*GB)
+            if available < 0:
+                break
+            print("Available space for {} is {}, about {}GB.".format(fn,
+                                                                     available
+                                                                     available//GB))
+            sys.stdout.flush()
+            with open(fn) as fo:
+                handle_file(fo, collection)
 
-    # Report on the collection.
-    print("Records in collection =", collection.count())
-    print("Non-tweet records in collection =",
-          collection.count({"id" : {"$exists" : False}}))
-    print("Duplicates in collection =",
-          collection.count({"anna:duplicate" : {"$exists" : True}}))
-    print("Retweets in collection =",
-          collection.count({"retweeted_status" : {"$exists" : True}}))
-    print("Retweet has original tweet in collection =",
-          collection.count({"anna:original" : {"$exists" : True}}))
-    for status in collection.find({"id" : {"$exists" : False}}):
-        print("Non-tweet =", status)
-        serial = status["anna:serial"]
-        try:
-            print("    Previous =",
-                  collection.find_one({"anna:serial" : serial - 1})["created_at"])
-            print("    Next     =",
-                  collection.find_one({"anna:serial" : serial + 1})["created_at"])
-        except:
-            print("    Couldn't get Previous or Next.  Multiple limits?")
+    finally:
+        with open("remaining.files.list", "w") as rfl:
+            print("Current file =", fn, file=rfl)
+            # Files is a partially exhausted generator object!
+            # Yay, Python!
+            # We could also iterate print, making prettier output.
+            print("File list =\n{}\n".format(list(files)), file=rfl)
+        # Report on the collection.
+        print("Records in collection =", collection.count())
+        print("Non-tweet records in collection =",
+              collection.count({"id" : {"$exists" : False}}))
+        print("Duplicates in collection =",
+              collection.count({"anna:duplicate" : {"$exists" : True}}))
+        print("Retweets in collection =",
+              collection.count({"retweeted_status" : {"$exists" : True}}))
+        print("Retweet has original tweet in collection =",
+              collection.count({"anna:original" : {"$exists" : True}}))
+        for status in collection.find({"id" : {"$exists" : False}}):
+            print("Non-tweet =", status)
+            serial = status["anna:serial"]
+            try:
+                print("    Previous =",
+                      collection.find_one({"anna:serial" : serial - 1})["created_at"])
+                print("    Next     =",
+                      collection.find_one({"anna:serial" : serial + 1})["created_at"])
+            except:
+                print("    Couldn't get Previous or Next.  Multiple limits?")
 
-    mongo.close()
+        mongo.close()
 
