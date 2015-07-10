@@ -406,7 +406,7 @@ if __name__ == "__main__":
                 print("File list =\n{}\n".format(files[files.index(fn):]),
                       file=rfl)
             break
-        print("Available space for 
+        print("Available space for {} is {}.", fn, available)
         with open(fn) as fo:
             handle_file(fo, collection)
 
