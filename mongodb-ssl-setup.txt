@@ -1,0 +1,103 @@
+TLS setup for MongoDB
+=====================
+
+Basic process:
+
+1.  `Create CA`_ (Certificate Authority) for the server.
+2.  `Generate key`_ w/o password for the server.
+3.  `Generate certificate`_ for the server.
+4.  Install certificate for server.
+5.  `Generate key`_ w/o password for each user (in first case,
+6.   "sensei" == admin, "steve", and "anna").  (This is insecure.)
+7.  `Generate certificate`_ for each user.
+8.  Install certificate for each user.
+9.  Create admin user "sensei" on server.
+10. Reconfigure server for TLS encryption/authentication.
+11. Use "sensei" to create users "steve" and "anna".
+
+If the CA were compromised, all students might be vulnerable
+indefinitely.  User certificates are valid until the end of the
+academic year (March 31).
+
+
+Procedure
+---------
+
+::
+
+  1.  /opt/local/etc/openssl/misc/CA.pl -newca
+
+      # This creates a CA in ./demoCA, with a certificate valid for
+      # 1095 days.  A shorter term of validity might be preferable.
+      # Create a config file such as mongo.cnf.
+
+  2.  for i in mongodb sensei anna steve; do
+        openssl genrsa -out $i-key.pem
+      done
+
+  3.  for i in mongodb sensei anna steve; do
+        openssl req -key $i-key.pem -out $i-req.pem -config mongo.cnf
+      done
+      # mongodb is special: it must have the server's hostname as CN
+      # (including the IP 127.0.0.1 for implicit connections to
+      # localhost; I'm not sure if "localhost" would do, but X.509 is
+      # pretty literal-minded about these things, so probably not).
+      # The others are arbitrary.
+      # Check results:
+      for i in mongodb sensei anna steve; do
+        echo $i
+        openssl req -text -in $i-cert.pem
+      done | less
+
+  4.  for i in mongodb sensei anna steve; do
+        # `MongoDB configure-ssl`_ says to use the opposite order.
+        # It also says that steps 1 and 2 can be done with one command.
+        openssl ca -in $i-req.pem -out $i-sig.pem -config mongo.cnf -days 250
+      done
+      # Check results:
+      for i in mongodb sensei anna steve; do
+        echo $i
+        openssl x509 -text -in $i-sig.pem
+      done | less
+
+  6.  for i in mongodb sensei anna steve; do
+        cat $i-{key,sig}.pem >$i-cert.pem
+      done
+      # Check with "openssl rsa" and "openssl x509".
+
+  7.  Use mongo shell to create the user "sensei" with:
+      db.getSiblingDB("$external").runCommand({
+        createUser: "emailAddress=turnbull@sk.tsukuba.ac.jp,CN=Sensei,OU=Admin,O=Turnbull Laboratory,ST=Ibaraki,C=JP",
+        roles: [{role: "userAdminAnyDataBase", db: "admin"}]
+        })
+
+  8.  Restart mongod with:
+      mongod --sslMode requireSSL --sslPEMKeyFile mongodb-cert.pem --sslCAFile demoCA/cacert.pem ...
+      to require validated SSL connection, and with:
+      mongod --auth --sslMode requireSSL -- mongodb-cert.pem --sslCAFile demoCA/cacert.pem ...
+      to require validated SSL connection and authentication.
+
+  9.  Authentication must be done after connection with db.auth().
+
+  10. Python 3 code to connect and authenticate:
+
+
+References
+----------
+
+- `Create CA`_
+
+- `Generate key`_
+
+- `Generate certificate`_
+
+- `File formats`_
+
+- `MongoDB configure-ssl`_
+
+.. _`Create CA`: https://www.openssl.org/docs/HOWTO/keys.txt
+.. _`Generate key`: https://www.openssl.org/docs/HOWTO/keys.txt
+.. _`Generate certificate`: https://www.openssl.org/docs/HOWTO/certificates.txt
+.. _`File formats`: https://support.ssl.com/Knowledgebase/Article/View/19/0/der-vs-crt-vs-cer-vs-pem-certificates-and-how-to-convert-them
+.. _`MongoDB configure-ssl`: http://docs.mongodb.org/manual/tutorial/configure-ssl/
+.. _`MongoDB configure-x509-client-authentication`: http://docs.mongodb.org/manual/tutorial/configure-x509-client-authentication/
