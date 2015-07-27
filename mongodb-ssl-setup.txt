@@ -36,7 +36,7 @@ Procedure
       done
 
   3.  for i in mongodb sensei anna steve; do
-        openssl req -key $i-key.pem -out $i-req.pem -config mongo.cnf
+        openssl req -new -key $i-key.pem -out $i-req.pem -config mongo.cnf
       done
       # mongodb is special: it must have the server's hostname as CN
       # (including the IP 127.0.0.1 for implicit connections to
