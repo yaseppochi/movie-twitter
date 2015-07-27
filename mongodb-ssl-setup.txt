@@ -79,7 +79,18 @@ Procedure
 
   9.  Authentication must be done after connection with db.auth().
 
-  10. Python 3 code to connect and authenticate:
+  10. Python 3 code to connect and authenticate: mongoauth.py.
+
+      MongoDB is very finicky about authorization, and there are a
+      large number of API deficiencies having to do with getting
+      information about the authorized user (it seems impossible).
+      The Python API is a little simpler than the "mongo" shell, but
+      suffers the same deficiencies.  Predefined user roles seem very
+      coarse at the database level, so it's important to use multiple
+      databases to manage access, it seems.  The "admin" and
+      "$external" databases, which are used to manage users, seem to
+      be special.  They have special roles ("userAdminAnyDatabase" and
+      "userAdmin") rather than the usual "read" and "readWrite" roles.
 
 
 References
