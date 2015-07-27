@@ -2,14 +2,15 @@
 Manage credentials for SSL connections to MongoDB on bigiron.
 """
 
+from os.path import expanduser
 from pymongo import MongoClient
 
 class SSLMongoClient(MongoClient):
     def __init__(self, distinguished_name, host, user_cert, ca_certs, database):
         self.distinguished_name = distinguished_name
         self.host = host
-        self.user_cert = user_cert
-        self.ca_certs = ca_certs
+        self.user_cert = expanduser(user_cert)
+        self.ca_certs = expanduser(ca_certs)
         self.database_name = database
         self.databases = []
 
@@ -50,7 +51,7 @@ steve = SSLMongoClient(
     host="uwakimon.sk.tsukuba.ac.jp",
     user_cert="~/steve-cert.pem",       # implies ssl=true
     ca_certs="~/cacert.pem",
-    database="admin"
+    database="anna"
     )
 
 anna = SSLMongoClient(
@@ -60,6 +61,6 @@ anna = SSLMongoClient(
     host="uwakimon.sk.tsukuba.ac.jp",
     user_cert="~/anna-cert.pem",      # implies ssl=true
     ca_certs="~/cacert.pem",
-    database="admin"
+    database="anna"
     )
 
