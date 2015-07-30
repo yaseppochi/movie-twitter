@@ -7,7 +7,7 @@
 # in 156 seconds, a rate of 2424 MB/day and 553,846 tweets/day for
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
-from moviedata import MOVIEDATA, PUNCT, nyzone # also STOPLIST
+from moviedata import DATES_MOVIES, PUNCT, nyzone # also STOPLIST
 from movie import track_join
 from myauth import get_my_api
 import errno
@@ -83,7 +83,7 @@ while working:
     try:
         if need_connection or datetime.datetime.now() > friday:
 
-            movies = track_join(collect_MOVIES(MOVIEDATA))
+            movies = track_join(collect_MOVIES(DATES_MOVIES))
             friday = next_friday()
 
             print("Restarting connection before opening v{0:d}".format(vol))
