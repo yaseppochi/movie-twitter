@@ -7,7 +7,7 @@
 # in 156 seconds, a rate of 2424 MB/day and 553,846 tweets/day for
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
-from moviedata import MOVIES, PUNCT # STOPLIST also available.
+from moviedata import MOVIEDATA, PUNCT, nytime # also STOPLIST
 from movie import track_join
 from myauth import get_my_api
 import errno
@@ -23,10 +23,6 @@ import urllib
 
 COUNT = 10000
 INDENT = 1                              # INDENT=0 doesn't help.  None?
-
-movies = track_join(MOVIES)
-print(movies)
-sys.stdout.flush()
 
 api = get_my_api()
 
@@ -56,24 +52,46 @@ need_connection = True
 delay = None                            # delay == 0 means disconnect occured,
                                         # but reconnect immediately.
 
+def collect_MOVIES(DATES_MOVIES):
+    MOVIES = []
+    now = datetime.datetime.now(tz=nyzone)
+    for date_movies in DATES_MOVIES:
+        date = date_movies[0]
+        if (date + datetime.timedelta(70) >= now
+            and date - datetime.timedelta(7) <= now):
+            MOVIES.extend(date_movies[1:])
+    return MOVIES
+
+def next_friday():
+    now = datetime.datetime.now(tz=nyzone)
+    offset = (4 - now.weekday() - 1) % 7 + 1
+    return now.replace(hour=9, minute=0, second=0, microsecond=0) + datetime.timedelta(offset)    
+
 signal.signal(signal.SIGHUP, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal)
-def generate_tweets(api):
+def generate_tweets(api, movies):
     # #### Can we catch signals and properly close the stream here?
     stream = twitter.TwitterStream(auth=api.auth)
     tweets = stream.statuses.filter(track=movies, stall_warnings=True)
     for tweet in tweets:
         yield tweet
 
+friday = datetime.datetime(1970,1,1,tzinfo=nytime)
+
 while working:
     iold = i
     try:
-        if need_connection:
+        if need_connection or datetime.datetime.now() > friday:
+
+            movies = track_join(collect_MOVIES(MOVIEDATA))
+            friday = next_friday()
+
             print("Restarting connection before opening v{0:d}".format(vol))
+            print(movies)
             sys.stdout.flush()
             if delay:
                 time.sleep(delay)
-            tweets = generate_tweets(api)
+            tweets = generate_tweets(api, movies)
 
         # #### results/20150325.091639/stream-results-13.json was left open
         # and stream.py restarted.  It appears to have skipped over that

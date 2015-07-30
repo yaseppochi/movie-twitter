@@ -316,16 +316,6 @@ DATES_MOVIES = [ # "movie",
     "Z for Zachariah",],
 ]
 
-def collect_MOVIES(DATES_MOVIES):
-    MOVIES = []
-    now = datetime.datetime.now(tz=nyzone)
-    for date_movies in DATES_MOVIES:
-        date = date_movies[0]
-        if (date + datetime.timedelta(70) >= now
-            and date - datetime.timedelta(7) <= now):
-            MOVIES.extend(date_movies[1:])
-    return MOVIES
-
 STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
 
 PUNCT = { ord(',') : None,
