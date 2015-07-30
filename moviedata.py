@@ -273,16 +273,58 @@ DATES_MOVIES = [ # "movie",
     "Best of Enemies",
     "The End of the Tour",
     "A LEGO Brickumentary",
-    "Listen to Me Marlon"],             # (on Wed.)
+    "Listen to Me Marlon",              # (on Wed.)
+    "The Young & Prodigious T.S. Spivet",
+     ],
+    [datetime.datetime(2015, 8, 7, 9, tzinfo=nyzone),
+    # August 7th (Friday)
+    "Fantastic Four",
+    "The Gift",                         # (2015)
+    "Ricki and the Flash",
+    "Shaun the Sheep Movie",
+    "Cop Car",
+    "Dark Places",
+    "The Diary of a Teenage Girl",
+    "Dragon Ball Z: Resurrection of 'F'",  # (on Tue.)
+    "The Falling",
+    "Kahlil Gibran's The Prophet",
+    "Metropolitan",],                   # (2015 re-release)
+    [datetime.datetime(2015, 8, 14, 9, tzinfo=nyzone),
+    # August 14th (Friday)
+    "The Man From U.N.C.L.E.",
+    "Straight Outta Compton",
+    "Underdogs",                        # (2014)
+    "Mistress America",
+    "WARx2",
+    "We Come As Friends",],
+    [datetime.datetime(2015, 8, 21, 9, tzinfo=nyzone),
+    # August 21rd (Friday)
+    "American Ultra",
+    "Hitman: Agent 47",
+    "6 Years",                          # (on Tue.)
+    "Digging for Fire",
+    "Grandma",                          # (2015)
+    "Learning to Drive",
+    "She's Funny That Way",],
+    [datetime.datetime(2015, 8, 28, 9, tzinfo=nytime),
+    # August 28rd (Friday)
+    "Regression",
+    "Sinister 2",
+    "We Are Your Friends",
+    "The Second Mother",
+    "War Room",
+    "Z for Zachariah",],
 ]
 
-MOVIES = []
-now = datetime.datetime.now(tz=nyzone)
-for date_movies in DATES_MOVIES:
-    date = date_movies[0]
-    if (date + datetime.timedelta(70) >= now
-        and date - datetime.timedelta(7) <= now):
-        MOVIES.extend(date_movies[1:])
+def collect_MOVIES(DATES_MOVIES):
+    MOVIES = []
+    now = datetime.datetime.now(tz=nyzone)
+    for date_movies in DATES_MOVIES:
+        date = date_movies[0]
+        if (date + datetime.timedelta(70) >= now
+            and date - datetime.timedelta(7) <= now):
+            MOVIES.extend(date_movies[1:])
+    return MOVIES
 
 STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
 
