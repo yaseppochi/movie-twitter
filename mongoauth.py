@@ -64,3 +64,22 @@ anna = SSLMongoClient(
     database="anna"
     )
 
+from pymongo import ASCENDING, TEXT
+
+# Should build IndexModels.
+def build_twitter_indicies(collection):
+    collection.create_index([("id", ASCENDING)],
+                            sparse=True)
+    collection.create_index([("timestamp_ms", ASCENDING)],
+                            sparse=True)
+    collection.create_index([("anna:serial", ASCENDING)],
+                            sparse=True)
+    collection.create_index([("text", TEXT),
+                             ("entities.urls.expanded_url", TEXT),
+                             ("entities.urls.display_url", TEXT),
+                             ("entities.media.expanded_url", TEXT),
+                             ("entities.media.display_url", TEXT),
+                             ("entities.hashtags.text", TEXT),
+                             ("entities.user_mentions.screen_name", TEXT)],
+                            default_language="english",
+                            name="twitter_text")
