@@ -6,9 +6,11 @@ from os.path import expanduser
 from pymongo import MongoClient
 
 class SSLMongoClient(MongoClient):
-    def __init__(self, distinguished_name, host, user_cert, ca_certs, database):
+    def __init__(self, distinguished_name, host, user_cert, ca_certs, database,
+                 port=27017):
         self.distinguished_name = distinguished_name
         self.host = host
+        self.port = port
         self.user_cert = expanduser(user_cert)
         self.ca_certs = expanduser(ca_certs)
         self.database_name = database
@@ -16,6 +18,7 @@ class SSLMongoClient(MongoClient):
 
     def connect(self):
         self.client = MongoClient(host=self.host,
+                                  port=self.port,
                                   ssl_certfile=self.user_cert,
                                   ssl_ca_certs=self.ca_certs)
         db = self.client[self.database_name]
@@ -54,6 +57,17 @@ steve = SSLMongoClient(
     database="anna"
     )
 
+tunnel = SSLMongoClient(
+    distinguished_name = "emailAddress=turnbull@sk.tsukuba.ac.jp,"
+                         "CN=Stephen Turnbull,OU=Graduate Seminar,"
+                         "O=Turnbull Laboratory,ST=Ibaraki,C=JP",
+    host="localhost",
+    port=28108,
+    user_cert="~/steve-cert.pem",       # implies ssl=true
+    ca_certs="~/cacert.pem",
+    database="anna"
+    )
+
 anna = SSLMongoClient(
     distinguished_name = "emailAddress=jdzoomer04@gmail.com,"
                          "CN=Anna Chen,OU=Graduate Seminar,"
@@ -64,22 +78,23 @@ anna = SSLMongoClient(
     database="anna"
     )
 
-from pymongo import ASCENDING, TEXT
-
-# Should build IndexModels.
-def build_twitter_indicies(collection):
-    collection.create_index([("id", ASCENDING)],
-                            sparse=True)
-    collection.create_index([("timestamp_ms", ASCENDING)],
-                            sparse=True)
-    collection.create_index([("anna:serial", ASCENDING)],
-                            sparse=True)
-    collection.create_index([("text", TEXT),
-                             ("entities.urls.expanded_url", TEXT),
-                             ("entities.urls.display_url", TEXT),
-                             ("entities.media.expanded_url", TEXT),
-                             ("entities.media.display_url", TEXT),
-                             ("entities.hashtags.text", TEXT),
-                             ("entities.user_mentions.screen_name", TEXT)],
-                            default_language="english",
-                            name="twitter_text")
+# Build IndexModels.
+# More for documentation of existing indices than use.
+from pymongo import IndexModel, ASCENDING, TEXT
+id_IM = IndexModel([("id", ASCENDING)],
+                   sparse=True)
+lang_IM = IndexModel([("lang", ASCENDING)],
+                     sparse=True)
+timestamp_IM = IndexModel([("timestamp_ms", ASCENDING)],
+                          sparse=True)
+serial_number_IM = IndexModel([("anna:serial", ASCENDING)],
+                              sparse=True)
+twitter_text_IM = IndexModel([("text", TEXT),
+                              ("entities.urls.expanded_url", TEXT),
+                              ("entities.urls.display_url", TEXT),
+                              ("entities.media.expanded_url", TEXT),
+                              ("entities.media.display_url", TEXT),
+                              ("entities.hashtags.text", TEXT),
+                              ("entities.user_mentions.screen_name", TEXT)],
+                             default_language="english",
+                             name="twitter_text")
