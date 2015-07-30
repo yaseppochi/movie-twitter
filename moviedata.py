@@ -268,7 +268,7 @@ DATES_MOVIES = [ # "movie",
      ],
     [datetime.datetime(2015, 7, 31, 9, tzinfo=nyzone),
     # *Released on July 31rd, Friday: *
-    "*Mission: Impossible - Rogue Nation*",
+    "Mission: Impossible - Rogue Nation",
     "Vacation",                         # (on Wed.)
     "Best of Enemies",
     "The End of the Tour",
