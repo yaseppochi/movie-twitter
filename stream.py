@@ -7,7 +7,7 @@
 # in 156 seconds, a rate of 2424 MB/day and 553,846 tweets/day for
 # an estimated 255 GB and 58,153,830 tweets in the data set.
 
-from moviedata import MOVIEDATA, PUNCT, nytime # also STOPLIST
+from moviedata import MOVIEDATA, PUNCT, nyzone # also STOPLIST
 from movie import track_join
 from myauth import get_my_api
 import errno
@@ -76,7 +76,7 @@ def generate_tweets(api, movies):
     for tweet in tweets:
         yield tweet
 
-friday = datetime.datetime(1970,1,1,tzinfo=nytime)
+friday = datetime.datetime(1970,1,1,tzinfo=nyzone)
 
 while working:
     iold = i

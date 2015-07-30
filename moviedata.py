@@ -306,7 +306,7 @@ DATES_MOVIES = [ # "movie",
     "Grandma",                          # (2015)
     "Learning to Drive",
     "She's Funny That Way",],
-    [datetime.datetime(2015, 8, 28, 9, tzinfo=nytime),
+    [datetime.datetime(2015, 8, 28, 9, tzinfo=nyzone),
     # August 28rd (Friday)
     "Regression",
     "Sinister 2",
