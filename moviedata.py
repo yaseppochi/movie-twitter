@@ -146,7 +146,7 @@ DATES_MOVIES = [ # "movie",
      "Saint Laurent",
      "The Seven Five",                  # (on Thu.)
      "Skin Trade",
-     "WARx2",                           # Not released on 4/24?
+     # "WARx2",                         # Not released on 4/24?
      "Sister Code"],
     [datetime.datetime(2015, 5, 15, 9, tzinfo=nyzone),
      # Released on May 15th (Friday)
