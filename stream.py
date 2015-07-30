@@ -88,6 +88,7 @@ while working:
             friday = next_friday()
 
             print("Restarting connection before opening v{0:d}".format(vol))
+            print("Next Friday is", friday)
             print(movies)
             sys.stdout.flush()
             if delay:
