@@ -82,7 +82,7 @@ friday = datetime.datetime(1970,1,1,tzinfo=nyzone)
 while working:
     iold = i
     try:
-        if need_connection or datetime.datetime.now() > friday:
+        if need_connection or datetime.datetime.now(tz=nyzone) > friday:
 
             movies = track_join(collect_MOVIES(DATES_MOVIES))
             friday = next_friday()
