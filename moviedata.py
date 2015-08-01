@@ -274,20 +274,20 @@ DATES_MOVIES = [ # "movie",
     "The End of the Tour",
     "A LEGO Brickumentary",
     "Listen to Me Marlon",              # (on Wed.)
-    "The Young & Prodigious T.S. Spivet",
+    "The Young & Prodigious T S Spivet",  # change periods to space
      ],
     [datetime.datetime(2015, 8, 7, 9, tzinfo=nyzone),
     # August 7th (Friday)
     "Fantastic Four",
     "The Gift",                         # (2015)
     "Ricki and the Flash",
-    "Shaun the Sheep Movie",
+    "Shaun the Sheep",                  # deleted "movie"
     "Cop Car",
     "Dark Places",
     "The Diary of a Teenage Girl",
     "Dragon Ball Z: Resurrection of 'F'",  # (on Tue.)
     "The Falling",
-    "Kahlil Gibran's The Prophet",
+    "Kahlil Gibran", "The Prophet",     # split into two phrases
     "Metropolitan",],                   # (2015 re-release)
     [datetime.datetime(2015, 8, 14, 9, tzinfo=nyzone),
     # August 14th (Friday)
@@ -322,6 +322,8 @@ PUNCT = { ord(',') : None,
           ord('?') : None,
           ord(':') : None,
           ord(';') : None,
+          ord('.') : None,
+          #ord('-') : None,
           }
 
 MOVIES_STARS = [

@@ -84,8 +84,8 @@ while working:
     try:
         if need_connection or datetime.datetime.now(tz=nyzone) > friday:
 
-            movies = track_join(collect_MOVIES(DATES_MOVIES))
             friday = next_friday()
+            movies = track_join(collect_MOVIES(DATES_MOVIES))
 
             print("Restarting connection before opening v{0:d}".format(vol))
             print("Next Friday is", friday)
