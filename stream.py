@@ -153,7 +153,7 @@ while working:
         need_connection = True
     except OSError as e:
         print(e)
-        if e.errno != signal.SIGHUP and e.errno != errno.ENOTRECOVERABLE:
+        if e.errno not in (signal.SIGHUP, errno.ENOTRECOVERABLE, errno.EIO):
             working = False
         else:
             need_connection = True
