@@ -154,9 +154,11 @@ while working:
     except OSError as e:
         print(e)
         if e.errno not in (signal.SIGHUP, errno.ENOTRECOVERABLE, errno.EIO):
-            working = False
-        else:
-            need_connection = True
+            if delay is None:
+                delay = 15
+            elif delay < 600:
+                delay = delay*2
+        need_connection = True
         print("%s caught signal %d%s\n%s." \
               % (time.ctime(), e.errno or 0, ", exiting" if not working else "",
                  e.strerror if hasattr(e, 'strerror') else "<no strerror>"))
