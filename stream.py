@@ -153,6 +153,11 @@ while working:
         need_connection = True
     except OSError as e:
         print(e)
+        if e.errno == signal.SIGTERM:
+            print("%s caught signal %d%s\n%s." \
+              % (time.ctime(), e.errno, ", exiting",
+                 e.strerror if hasattr(e, 'strerror') else "<no strerror>"))
+            sys.exit(0)
         if e.errno not in (signal.SIGHUP, errno.ENOTRECOVERABLE, errno.EIO):
             if delay is None:
                 delay = 15
