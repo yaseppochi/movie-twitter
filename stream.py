@@ -157,6 +157,8 @@ while working:
             print("%s caught signal %d%s\n%s." \
               % (time.ctime(), e.errno, ", exiting",
                  e.strerror if hasattr(e, 'strerror') else "<no strerror>"))
+            print(i, "tweets done.")
+            sys.stdout.flush()
             sys.exit(0)
         if e.errno not in (signal.SIGHUP, errno.ENOTRECOVERABLE, errno.EIO):
             if delay is None:
