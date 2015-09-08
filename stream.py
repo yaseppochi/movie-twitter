@@ -158,7 +158,7 @@ while working:
         else:
             need_connection = True
         print("%s caught signal %d%s\n%s." \
-              % (time.ctime(), e.errno, ", exiting" if not working else "",
+              % (time.ctime(), e.errno or 0, ", exiting" if not working else "",
                  e.strerror if hasattr(e, 'strerror') else "<no strerror>"))
     except StopIteration as e:          # Shouldn't happen (should be caught
                                         # by HangupException), but if it does,
