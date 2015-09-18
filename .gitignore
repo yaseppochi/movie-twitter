@@ -1,7 +1,9 @@
-,,*
+,*
 __pycache__
 results
-report
+reports
+demoCA
+*.pem
 *.log
 *.json
 cifs*
