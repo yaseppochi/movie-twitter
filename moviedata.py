@@ -314,6 +314,53 @@ DATES_MOVIES = [ # "movie",
     "The Second Mother",
     "War Room",
     "Z for Zachariah",],
+    [datetime.datetime(2015, 9, 4, 9, tzinfo=nyzone),
+    # Released on Sep. 4th, Friday: 
+    "The Transporter Refueled",
+    "A Walk in the Woods",              # (on Wed.)
+    "Before We Go",
+    "Bloodsucking Bastards",
+    "Number One Fan",
+    "Rififi",                           # (2015 re-release) (on Wed.)
+    "Un Gallo con Muchos Huevos",],
+    [datetime.datetime(2015, 9, 11, 9, tzinfo=nyzone),
+    # Released on Sep. 11st, Friday:
+    "90 Minutes in Heaven",
+    "Perfect Guy",
+    "The Visit",
+    "Breathe",
+    "Coming Home",                      # (2015) (on Wed.)
+    "Listening",
+    "Paul Taylor: Creative Domain",
+    "Sleeping with Other People",
+    "Time Out of Mind",
+    "Wolf Totem",],
+    [datetime.datetime(2015, 9, 18, 9, tzinfo=nyzone),
+    # Released on Sep. 18th, Friday:
+    "Black Mass",
+    "Captive",                          # (2015)
+    "Maze Runner: The Scorch Trials",
+    "About Ray",
+    "Everest",                          # (2015)
+    "Katti Batti",
+    "Pawn Sacrifice",                   # (on Wed.)
+    "Prophet's Prey",
+    "Sicario",
+    "War Pigs",],
+    [datetime.datetime(2015, 9, 25, 9, tzinfo=nyzone),
+    #Released on Sep. 25th, Friday:
+    "Before I Wake",
+    "The Green Inferno",
+    "Hotel Transylvania 2",
+    "The Intern",
+    "10 Days in a Madhouse",
+    "99 Homes",
+    "A Brave Heart: The Lizzie Velasquez Story",
+    "The Keeping Room",
+    "Labyrinth of Lies",
+    "Mississippi Grind",
+    "The Reflektor Tapes",              # (on Thu.)
+    "Stonewall",],                      # (2015)
 ]
 
 STOPSET = {"a", "an", "the", "some", "to", "from", "for", "with"}
