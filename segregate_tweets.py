@@ -38,6 +38,7 @@ NOTE: Mixing the three forms is unimplemented.
     sources = []
 
     def add_one(item, sources):
+        print("Entering add_one: item=%s" % item, file=stderr)
         if item.endswith(".json"):
             if os.path.isfile(item):
                 sources.append(item)
@@ -47,6 +48,7 @@ NOTE: Mixing the three forms is unimplemented.
         return False
 
     def add_many(item, sources):
+        print("Entering add_many: item=%s" % item, file=stderr)
         if stampre.match(item):
             if os.path.isdir(item):
                 for f in os.listdir(item):
@@ -58,6 +60,7 @@ NOTE: Mixing the three forms is unimplemented.
             return False
 
     def add_folder(item, sources):
+        print("Entering add_folder: item=%s" % item, file=stderr)
         if os.path.isdir(item):
             for f in os.listdir(item):
                 add_many(item, sources)
