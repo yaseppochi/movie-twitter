@@ -86,7 +86,7 @@ DATES_MOVIES = [ # "movie",
      "Effie Gray",
      "Lambert & Stamp",
      "The Living",
-     "SBK The-Movie",
+     "SBK Movie",
      "Woman in Gold"],
     [datetime.datetime(2015, 4, 10, 9, tzinfo=nyzone),
      # Released on Apr. 10
@@ -268,7 +268,7 @@ DATES_MOVIES = [ # "movie",
      ],
     [datetime.datetime(2015, 7, 31, 9, tzinfo=nyzone),
     # *Released on July 31rd, Friday: *
-    "Mission: Impossible - Rogue Nation",
+    "Mission Impossible Rogue Nation",
     "Vacation",                         # (on Wed.)
     "Best of Enemies",
     "The End of the Tour",
@@ -370,7 +370,7 @@ PUNCT = { ord(',') : None,
           ord(':') : None,
           ord(';') : None,
           ord('.') : None,
-          #ord('-') : None,
+          ord('-') : ' ',
           }
 
 MOVIES_STARS = [
