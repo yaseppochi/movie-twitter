@@ -29,7 +29,6 @@ NOTE: Mixing the three forms is unimplemented.
     args = parser.parse_args()
     # Unlovely(?) onepass algorithm.
     if args.prefix:
-        print("args.prefix='%s'" % (args.prefix,))
         srclist = [os.path.join(args.prefix, x) for x in args.sources]
     else:
         srclist = args.sources
@@ -42,18 +41,17 @@ NOTE: Mixing the three forms is unimplemented.
             if os.path.isfile(item):
                 sources.append(item)
             else:
-                print("Ignoring nonfile: %s" % item)
+                print("Ignoring nonfile: %s" % (item,), file=stderr)
             return True
         return False
 
     def add_many(item, sources):
-        print("Entering add_many: item=%s" % item)
         if stampre.match(item):
             if os.path.isdir(item):
                 for f in os.listdir(item):
                     add_one(os.path.join(item, f), sources)
             else:
-                print("Ignoring nondirectory: %s" % item)
+                print("Ignoring nondirectory: %s" % (item,), file=stderr)
             return True
         else:
             return False
@@ -63,7 +61,7 @@ NOTE: Mixing the three forms is unimplemented.
             for f in os.listdir(item):
                 add_many(os.path.join(item, f), sources)
         else:
-            print("Ignoring nondirectory: %s" % item)
+            print("Ignoring nondirectory: %s" % (item,), file=stderr)
 
     for x in srclist:
         add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
@@ -139,5 +137,6 @@ def break_this_motherfucker_up():
 
 if __name__ == "__main__":
     json_files = parse_command_line()
-    for f in json_files:
-        print(f)
+    print("There are %d JSON files, estimated %.1fTB." % (
+            len(json_files), (50 / 1000000) * len(json_files)),
+          file=stderr)
