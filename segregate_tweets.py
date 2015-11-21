@@ -66,7 +66,7 @@ NOTE: Mixing the three forms is unimplemented.
 
     for x in srclist:
         add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
-
+    return srclist
 
 def break_this_motherfucker_up():
     with open(args.STREAM) as stream:       # TODO: Need to handle Twitter API too.
