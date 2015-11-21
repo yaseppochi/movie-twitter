@@ -1,6 +1,8 @@
 import datetime
 import moviedata
 
+WEEKMILLISECONDS = 1000 * int(datetime.timedelta(7).total_seconds())
+
 class MovieException(Exception):
     pass
 
@@ -51,6 +53,12 @@ class Movie(object):
             raise ReinitializationError(self, 'stars', stars)
         self.star_list = stars
 
+    def _compute_timestamp_list(self):
+        self.week_bounds = []
+        origin = 1000 * int(self.opening_date.timestamp())
+        for i in range(-1, 11):
+            self.week_bounds.append(origin + i * WEEKMILLISECONDS)
+
     def __str__(self):
         if self.star_list:
             s = ",".join(" " + star for star in self.star_list)
@@ -66,8 +74,10 @@ class Movie(object):
     # Note that string "in" operator is case-sensitive, so we lowercase all words.
     # Movie names are not searched for directly so they don't need lowercasing.
     def _compute_word_movie_maps(self):
-        self.words = [w.lower() for w
-                      in self.name.translate(moviedata.PUNCT).split()]
+        self.words = [w for w
+                      in self.name.translate(moviedata.PUNCT).lower().split()
+                      if w not in moviedata.STOPSET]
+        assert(self.words)
         for w in self.words:
             # #### Use DefaultDict.
             wm = Movie.word_movies
@@ -87,6 +97,7 @@ def populate_movie_list(dates, stars):
         for name in elt[1:]:
             m = Movie._get_by_name(name)
             m._add_opening_date(date)
+            m._compute_timestamp_list()
     for elt in stars:
         m = Movie._get_by_name(elt[0])
         m._add_star_list(elt[1:])
@@ -100,4 +111,5 @@ populate_movie_list(moviedata.DATES_MOVIES,
 
 if __name__ == "__main__":
     for m in Movie.by_name.values():
-        print(m)
+        print(m.name, m.words, m.opening_date)
+        print(m.week_bounds[:4])
