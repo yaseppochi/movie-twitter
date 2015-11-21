@@ -1,4 +1,4 @@
-#! /opt/local/bin/python3.4
+# segregate_tweets -- organize tweets into movie-week files
 
 # Set up the imports and other stuff needed to access the tweet
 # database.  Assume that tweets are already in an iterable called
@@ -6,6 +6,7 @@
 import argparse
 import json
 import os.path
+import re
 from sys import stderr
 
 def parse_command_line():
