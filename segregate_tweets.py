@@ -29,7 +29,7 @@ NOTE: Mixing the three forms is unimplemented.
     args = parser.parse_args()
     # Unlovely(?) onepass algorithm.
     if args.prefix:
-        print(args.prefix)
+        print("args.prefix='%s'" % (args.prefix,))
         srclist = [os.path.join(args.prefix, x) for x in args.sources]
     else:
         srclist = args.sources
@@ -38,7 +38,6 @@ NOTE: Mixing the three forms is unimplemented.
     sources = []
 
     def add_one(item, sources):
-        print("Entering add_one: item=%s" % item)
         if item.endswith(".json"):
             if os.path.isfile(item):
                 sources.append(item)
@@ -60,7 +59,6 @@ NOTE: Mixing the three forms is unimplemented.
             return False
 
     def add_folder(item, sources):
-        print("Entering add_folder: item=%s" % item)
         if os.path.isdir(item):
             for f in os.listdir(item):
                 add_many(os.path.join(item, f), sources)
@@ -69,7 +67,7 @@ NOTE: Mixing the three forms is unimplemented.
 
     for x in srclist:
         add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
-    return srclist
+    return sources
 
 def break_this_motherfucker_up():
     with open(args.STREAM) as stream:       # TODO: Need to handle Twitter API too.
