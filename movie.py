@@ -31,7 +31,12 @@ class Movie(object):
         if name in Movie.by_name:
              raise DuplicateNameError(name)
         Movie.by_name[name] = self
-        self._compute_word_movie_maps()
+        self.words = [w for w
+                      in self.name.translate(moviedata.PUNCT).lower().split()
+                      if w not in moviedata.STOPSET]
+        assert(self.words)
+        self.file_stem = "-".join(self.words)
+        self._compute_word_movie_map()
 
     @classmethod
     def _get_by_name(cls, name):
@@ -70,14 +75,10 @@ class Movie(object):
                                                   self.opening_date,
                                                   s)
 
-    # Compute word->movie and movie->word maps.
+    # Compute word->movie map.
     # Note that string "in" operator is case-sensitive, so we lowercase all words.
     # Movie names are not searched for directly so they don't need lowercasing.
-    def _compute_word_movie_maps(self):
-        self.words = [w for w
-                      in self.name.translate(moviedata.PUNCT).lower().split()
-                      if w not in moviedata.STOPSET]
-        assert(self.words)
+    def _compute_word_movie_map(self):
         for w in self.words:
             # #### Use DefaultDict.
             wm = Movie.word_movies
@@ -86,18 +87,22 @@ class Movie(object):
             else:
                 wm[w] = [self]
 
+    # #### Obsolete with the advent of week_bounds.
     def timestamp_to_week(self, time, _week=datetime.timedelta(7)):
         return (datetime.datetime.fromtimestamp(time, moviedata.nytime)
                 - self.opening_date) // _week
 
 
 def populate_movie_list(dates, stars):
+    stems = {}
     for elt in dates:
         date = elt[0]
         for name in elt[1:]:
             m = Movie._get_by_name(name)
             m._add_opening_date(date)
             m._compute_timestamp_list()
+            assert(m.file_stem not in stems)
+            stems.add(m.file_stem)
     for elt in stars:
         m = Movie._get_by_name(elt[0])
         m._add_star_list(elt[1:])
