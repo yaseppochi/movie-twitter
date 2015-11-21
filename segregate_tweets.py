@@ -50,7 +50,7 @@ NOTE: Mixing the three forms is unimplemented.
         if stampre.match(item):
             if os.path.isdir(item):
                 for f in os.listdir(item):
-                    addone(item, sources)
+                    add_one(item, sources)
             else:
                 print("Ignoring nondirectory: %s" % item, file=stderr)
             return True
@@ -60,12 +60,12 @@ NOTE: Mixing the three forms is unimplemented.
     def add_folder(item, sources):
         if os.path.isdir(item):
             for f in os.listdir(item):
-                addmany(item, sources)
+                add_many(item, sources)
         else:
             print("Ignoring nondirectory: %s" % item, file=stderr)
 
     for x in srclist:
-        addfile(x, sources) or addmany(x, sources) or add_folder(x, sources)
+        add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
 
 
 def break_this_motherfucker_up():
