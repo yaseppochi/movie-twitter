@@ -24,7 +24,8 @@ Not useful with shell wildcards.""")
 Can be a folder containing folders with names like "YYYYMMDD.HHMMSS",
 or a space-separated list of folders with names like "YYYYMMDD.HHMMSS",
 or a space-separated list of files with names like "stream-results-NNN.json".
-NOTE: Mixing the three forms is unimplemented.
+NOTE: Mixing the three forms is OK, but repeats are not deleted.
+NOTE: folder names should not have trailing slashes.
 """)
     args = parser.parse_args()
     # Unlovely(?) onepass algorithm.
