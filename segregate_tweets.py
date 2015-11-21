@@ -33,7 +33,7 @@ NOTE: Mixing the three forms is unimplemented.
         srclist = [os.path.join(args.prefix, x) for x in args.sources]
     else:
         srclist = args.sources
-    stampre = r"2015[01][0-9][0-3][0-9]\.[0-2][0-9][0-6][0-9][0-6][0-9]"
+    stampre = r"(?:.*/)?2015[01][0-9][0-3][0-9]\.[0-2][0-9][0-6][0-9][0-6][0-9]$"
     stampre = re.compile(stampre)
     sources = []
 
