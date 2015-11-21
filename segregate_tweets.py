@@ -29,7 +29,7 @@ NOTE: Mixing the three forms is unimplemented.
     args = parser.parse_args()
     # Unlovely(?) onepass algorithm.
     if args.prefix:
-        print(args.prefix, file=stderr)
+        print(args.prefix)
         srclist = [os.path.join(args.prefix, x) for x in args.sources]
     else:
         srclist = args.sources
@@ -38,34 +38,34 @@ NOTE: Mixing the three forms is unimplemented.
     sources = []
 
     def add_one(item, sources):
-        print("Entering add_one: item=%s" % item, file=stderr)
+        print("Entering add_one: item=%s" % item)
         if item.endswith(".json"):
             if os.path.isfile(item):
                 sources.append(item)
             else:
-                print("Ignoring nonfile: %s" % item, file=stderr)
+                print("Ignoring nonfile: %s" % item)
             return True
         return False
 
     def add_many(item, sources):
-        print("Entering add_many: item=%s" % item, file=stderr)
+        print("Entering add_many: item=%s" % item)
         if stampre.match(item):
             if os.path.isdir(item):
                 for f in os.listdir(item):
                     add_one(item, sources)
             else:
-                print("Ignoring nondirectory: %s" % item, file=stderr)
+                print("Ignoring nondirectory: %s" % item)
             return True
         else:
             return False
 
     def add_folder(item, sources):
-        print("Entering add_folder: item=%s" % item, file=stderr)
+        print("Entering add_folder: item=%s" % item)
         if os.path.isdir(item):
             for f in os.listdir(item):
                 add_many(item, sources)
         else:
-            print("Ignoring nondirectory: %s" % item, file=stderr)
+            print("Ignoring nondirectory: %s" % item)
 
     for x in srclist:
         add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
