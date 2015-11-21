@@ -52,7 +52,7 @@ NOTE: Mixing the three forms is unimplemented.
         if stampre.match(item):
             if os.path.isdir(item):
                 for f in os.listdir(item):
-                    add_one(item, sources)
+                    add_one(f, sources)
             else:
                 print("Ignoring nondirectory: %s" % item)
             return True
@@ -63,7 +63,7 @@ NOTE: Mixing the three forms is unimplemented.
         print("Entering add_folder: item=%s" % item)
         if os.path.isdir(item):
             for f in os.listdir(item):
-                add_many(item, sources)
+                add_many(f, sources)
         else:
             print("Ignoring nondirectory: %s" % item)
 
