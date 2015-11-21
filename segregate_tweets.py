@@ -28,8 +28,11 @@ NOTE: Mixing the three forms is unimplemented.
 """)
     args = parser.parse_args()
     # Unlovely(?) onepass algorithm.
-    if args.prefix is not None:
+    if args.prefix:
+        print(args.prefix, file=stderr)
         srclist = [os.path.join(args.prefix, x) for x in args.sources]
+    else:
+        srclist = args.sources
     stampre = r"2015[01][0-9][0-3][0-9]\.[0-2][0-9][0-6][0-9][0-6][0-9]"
     stampre = re.compile(stampre)
     sources = []
