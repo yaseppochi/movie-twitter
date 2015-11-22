@@ -1,6 +1,7 @@
 # segregate_tweets -- organize tweets into movie-week files
 
 import argparse
+from collections import Counter
 import json
 import os.path
 import re
@@ -88,6 +89,22 @@ def json_stream(file_list):
                 print("Error:", e, file=stderr)
                 print("|", s[start:start+5000], sep='', file=stderr)
                 print("len(s) =", end, "start = ", start, file=stderr)
+
+
+def count_keys(tweets):
+    tdist = Counter()
+    rtdist = Counter()
+    udist = Counter()
+    for tweet in tweets:
+        for key in tweet:
+            tdist[key] += 1
+        if 'retweeted_status' in tweet:
+            for key in tweet['retweeted_status']:
+                rtdist[key] += 1
+        if 'user' in tweet:
+            for key in tweet['user']:
+                udist[key] += 1
+    return tdist, udist, rtdist
 
 
 desired_fields = (
