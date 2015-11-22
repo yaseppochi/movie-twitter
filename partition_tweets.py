@@ -17,7 +17,7 @@ def parse_command_line():
     parser.add_argument('--prefix', type=str,
                         help="""Directory prefix for resolving relative names.
 Not useful with shell wildcards.""")
-    parser.add_argument('sources', type=str, nargs="+",
+    parser.add_argument('sources', type=str, nargs="*",
                         help="""Sources of JSON tweets.
 Can be a folder containing folders with names like "YYYYMMDD.HHMMSS",
 or a space-separated list of folders with names like "YYYYMMDD.HHMMSS",
