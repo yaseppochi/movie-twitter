@@ -150,11 +150,15 @@ def prune_dict (old, desired_fields):
         # #### Optimize me!
         head = item[0]
         tail = item[1:]
-        value = old[head]
-        if tail:
-            new[head] = prune_dict(value, tail)
-        else:
-            new[head] = value
+        try:
+            value = old[head]
+            if tail:
+                new[head] = prune_dict(value, tail)
+            else:
+                new[head] = value
+        except KeyError:
+            # #### We should log these.
+            pass
     return new
 
 
