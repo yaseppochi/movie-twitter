@@ -86,9 +86,22 @@ def json_stream(file_list):
                 start = start + offset
                 yield tweet
             except Exception as e:
+                print("file =", f, file=stderr)
+                print("start = ", start, "end =", start+20000, file=stderr)
                 print("Error:", e, file=stderr)
-                print("|", s[start:start+5000], sep='', file=stderr)
-                print("len(s) =", end, "start = ", start, file=stderr)
+                # Fall back to the rest of the file and hope this doesn't
+                # happen often.
+                try:
+                    tweet, offset = decoder.raw_decode(s[start:])
+                    start = start + offset
+                    yield tweet
+                except Exception as e:
+                    print("file =", f, file=stderr)
+                    print("start = ", start, "end =", end, file=stderr)
+                    print("Error:", e, file=stderr)
+                    # The file is hosed.  Bail out.
+                    # We recognize this by the repeated error at same start.
+                    break
 
 
 def count_keys(tweets):
