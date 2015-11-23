@@ -297,7 +297,10 @@ def break_this_motherfucker_up():
 
 if __name__ == "__main__":
     json_files = parse_command_line()
-    print("There are %d JSON files, estimated %.1fGB." % (
-            len(json_files), len(json_files) / 20),
-          file=stderr)
+    if json_files:
+        print("There are %d JSON files, estimated %.1fGB." % (
+                len(json_files), len(json_files) / 20),
+              file=stderr)
+    else:
+        print("You didn't provide any arguments.  Is that right?")
 

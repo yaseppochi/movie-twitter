@@ -6,15 +6,17 @@ sys.path.append("..")
 
 # test data
 datafiles = [
-    "data/20151122.215510/stream-results-0.json",
-    "data/20151122.215510/stream-results-1.json",
+    # Reverse order to correspond to tweet, retweet, many tweets.
     "data/20151122.215510/stream-results-2.json",
+    "data/20151122.215510/stream-results-1.json",
+    "data/20151122.215510/stream-results-0.json",
     ]
 
 # test scaffold
 from partition_tweets import (
-    json_stream,
     count_keys,
+    json_stream,
+    parse_command_line,
     )
 
 def print_dists(files):
@@ -34,8 +36,13 @@ def print_dists(files):
     for key in sorted(list(rtdist.keys())):
         print(" ", key, ":", rtdist[key])
 
-for i in range(3):
-    print_dists(datafiles[2 - i : 3 - i])
+sources = parse_command_line()
 
-print_dists(datafiles)
+if not sources:
+    sources = datafiles
+    for i in range(3):
+        # The slice is used because print_dists expects a list.
+        print_dists(sources[i : i + 1])
+
+print_dists(sources)
 
