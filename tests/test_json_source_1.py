@@ -15,7 +15,7 @@ datafiles = [
 # test scaffold
 from partition_tweets import (
     count_keys,
-    json_stream,
+    json_source,
     parse_command_line,
     )
 
@@ -24,7 +24,7 @@ def print_dists(files):
     for f in files:
         print(f)
 
-    tdist, udist, rtdist = count_keys(json_stream(files))
+    tdist, udist, rtdist = count_keys(json_source(files))
 
     print("The distribution of status keys is:")
     for key in sorted(list(tdist.keys())):

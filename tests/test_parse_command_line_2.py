@@ -5,10 +5,7 @@ import sys
 sys.path.append("..")
 
 # test data
-sys.argv = [
-    "test2.py",
-    "data/20151122.215510",
-    ]
+sys.argv[1:] = ["data/20151122.215510"]
 
 # test scaffolding
 from partition_tweets import parse_command_line

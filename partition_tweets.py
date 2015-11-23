@@ -67,7 +67,7 @@ NOTE: folder names should not have trailing slashes.
     return sources
 
 
-def json_stream(file_list):
+def json_source(file_list):
     decoder = json.JSONDecoder()
     for f in file_list:
         with open(f) as stream:         # TODO: Handle Twitter API too.

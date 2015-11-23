@@ -5,8 +5,7 @@ import sys
 sys.path.append("..")
 
 # test data
-sys.argv = [
-    "test3.py",
+sys.argv[1:] = [
     "data/20151122.215510/stream-results-0.json",
     "data/20151122.215510/stream-results-1.json",
     "data/20151122.215510/stream-results-2.json",
