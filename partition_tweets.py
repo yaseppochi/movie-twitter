@@ -121,37 +121,54 @@ def count_keys(tweets):
 
 
 desired_fields = (
-    ('text'),
-    ('id'),
-    ('created_at'),
-    ('timestamp_ms'),
-    ('favorite_count'),
-    ('url'),
-    ('hashtags'),
-    ('time_zone'),
-    ('retweet_count'),
+    ('created_at',),
+    ('favorite_count',),
+    ('hashtags',),
+    ('id',),
+    ('retweet_count',),
+    ('text',),
+    ('timestamp_ms',),
+    ('url',),
     ('user',
-     ('id'),
-     ('screen_name'),
-     ('followers_count'),
-     ('friends_count'),
-     ('status_count'),
+     ('favourites_count',),
+     ('followers_count',),
+     ('friends_count',),
+     ('id',),
+     ('location',),
+     ('screen_name',),
+     ('statuses_count',),
+     ('time_zone',),
      ),
     ('retweeted_status',
-     ('id'),
-     ('favorite_count'),
-     ('retweet_count'),
-    #('entities',
-    #    ('hashtags'),
-    #    ('urls'),
-    # ),
-     ('time_zone'),
+     ('favorite_count',),
+     ('id',),
+     ('retweet_count',),
+     ('text',),
      ('user',
-      ('id'),
-      ('screen_name'),
-      ('followers_count'),
-      ('friends_count'),
-      ('status_count'),
+      ('favourites_count',),
+      ('followers_count',),
+      ('friends_count',),
+      ('id',),
+      ('location',),
+      ('screen_name',),
+      ('statuses_count',),
+      ('time_zone',),
+      ),
+     ('entities',
+      ('hashtags',
+       ('text',),
+       ),
+      ('urls',
+       ('expanded_url',),
+       ),
+      ),
+     ),
+    ('entities',
+     ('hashtags',
+      ('text',),
+      ),
+     ('urls',
+      ('expanded_url',),
       ),
      ),
     )
@@ -165,7 +182,9 @@ def prune_dict (old, desired_fields):
         tail = item[1:]
         try:
             value = old[head]
-            if tail:
+            if isinstance(value, list):
+                new[head] = [prune_dict(x, tail) for x in value]
+            elif tail:
                 new[head] = prune_dict(value, tail)
             else:
                 new[head] = value
@@ -174,6 +193,20 @@ def prune_dict (old, desired_fields):
             pass
     return new
 
+
+CLOSE_REQUEST = object()
+def json_sink(filename):                # Should use asyncio.
+    with open(filename, 'a') as s:      # TODO: Handle Twitter API too.
+        while True:
+            obj = (yield)
+            if isinstance(obj, dict):
+                json.dump(obj, s)
+            elif obj is CLOSE_REQUEST:
+                s.close()
+                break
+            else:
+                # #### This should only be used for whitespace.
+                s.write(obj)
 
 # Assume that tweets are already in an iterable called "dataset".
 
