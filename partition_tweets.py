@@ -3,9 +3,19 @@
 import argparse
 from collections import Counter
 import json
+from movie import Movie
 import os.path
 import re
 from sys import stderr
+
+# tuning parameters
+MAX_FILES = 200
+WRITES_PER_FLUSH = 1000
+READS_PER_WRITE = 1000
+TWEET_WRAP_COLUMNS = 72
+
+# #### Use .ini file to configure this parameters and defaults for
+# command arguments.
 
 def parse_command_line():
     """
@@ -15,8 +25,10 @@ def parse_command_line():
     parser = argparse.ArgumentParser(
         description="Segregate tweets (JSON) according to movie and month.")
     parser.add_argument('--prefix', type=str,
-                        help="""Directory prefix for resolving relative names.
+                        help="""Directory prefix for resolving relative names of sources.
 Not useful with shell wildcards.""")
+    parser.add_argument('--output', type=str, default="/var/local/twitterdb",
+                        help="""Directory prefix for storing partition.""")
     parser.add_argument('sources', type=str, nargs="*",
                         help="""Sources of JSON tweets.
 Can be a folder containing folders with names like "YYYYMMDD.HHMMSS",
@@ -33,7 +45,7 @@ NOTE: folder names should not have trailing slashes.
         srclist = args.sources
     stampre = r"(?:.*/)?2015[01][0-9][0-3][0-9]\.[0-2][0-9][0-6][0-9][0-6][0-9]$"
     stampre = re.compile(stampre)
-    sources = []
+    sources = [args.output]             # #### FIXME!!!!
 
     def add_one(item, sources):
         if item.endswith(".json"):
@@ -123,7 +135,6 @@ def count_keys(tweets):
 desired_fields = (
     ('created_at',),
     ('favorite_count',),
-    ('hashtags',),
     ('id',),
     ('retweet_count',),
     ('text',),
@@ -194,30 +205,81 @@ def prune_dict (old, desired_fields):
     return new
 
 
-CLOSE_REQUEST = object()
 def json_sink(filename):                # Should use asyncio.
+    count = 0
     with open(filename, 'a') as s:      # TODO: Handle Twitter API too.
         while True:
             obj = (yield)
             if isinstance(obj, dict):
                 json.dump(obj, s)
-            elif obj is CLOSE_REQUEST:
-                s.close()
-                break
+                count = (count + 1) % WRITES_PER_FLUSH
+                if count == 0:
+                    s.flush()
             else:
                 # #### This should only be used for whitespace.
                 s.write(obj)
 
-# Assume that tweets are already in an iterable called "dataset".
 
-def partition_tweets(dataset):
+def get_writer(filename):
 
-    file_map = {}                       # movie-week name -> open file object
-    file_lru = []                       # File objects in LRU order.
+    f = file_map.get(filename)
+    while f is None:
+        try:
+            f = json_sink(filename)
+            next(f)
+            file_map[filename] = f
+            if filename in file_lru:    # #### Maybe using .index is faster?
+                file_lru.remove(filename)
+            file_lru.append(filename)
+        except IOError:
+            if not file_lru:
+                raise
+            lru = file_lru.pop(0)
+            file_map[lru].close()
+            del file_map[lru]
+    else:
+        if len(file_lru) > MAX_FILES:
+            lru = file_lru.pop(0)
+            file_map[lru].close()
+            del file_map[lru]
+    return f
+
+
+def wrap_tweet_text(tweet):
+    text = (tweet.get('retweeted_status') or tweet)['text']
+    words = text.split()
+    i = 0
+    lines = []
+    end = len(words)
+    line = ["*"]                        # First line of tweet marker.
+    length = 1
+    while i < end:
+        word = words[i]
+        length += (1 + len(word))
+        if length > TWEET_WRAP_COLUMNS:
+            # Alternative algorithm:
+            # don't join, insert newline in words here ...
+            lines.append(" ".join(line))
+            line = [word]
+            length = len(word)
+        else:
+            # ... and space here ...
+            line.append(word)
+        i += 1
+    #lines.append("")
+    # ... and join words on "" here.
+    return "\n".join(lines)
+
+
+file_map = {}                           # movie-week name -> open file object
+file_lru = []                           # File objects in LRU order.
+stats = {}
+
+def partition_tweets(dataset, output):
+
     count = 0                           # Count of tweets (fully) processed.
 
     # Various statistics for checking on Twitter API.
-    stats = {}
     stats['no lang'] = 0
     stats['lang english'] = 0
     stats['lang region'] = 0
@@ -225,6 +287,7 @@ def partition_tweets(dataset):
     stats['no movie for tweet'] = 0
 
     # main loop
+    pending_writes = []
     for tweet in dataset:
 
         # Short-circuit (ignore) non-English tweets.
@@ -243,10 +306,11 @@ def partition_tweets(dataset):
 
         # Determine applicable movies.
         # #### There may be a better algorithm based on Movie.word_movies.
+        text = tweet['text'].lower()
         movies = []
-        for m in Movie.by_name:
+        for m in Movie.by_name.values():
             for w in m.words:
-                if w not in tweet['text']:
+                if w not in text:
                     break
             else:
                 movies.append(m)
@@ -255,54 +319,48 @@ def partition_tweets(dataset):
             continue
 
         # Determine applicable dates and filenames.
-        # #### It might be worthwhile to "unroll" a binary search?
-        stamp = tweet['timestamp_ms']
+        stamp = int(tweet['timestamp_ms'])
         for m in movies:
+            # #### It might be worthwhile to "unroll" a binary search?
             for i in range(len(m.week_bounds) - 1):
                 # #### This range check can probably be improved.
                 if m.week_bounds[i] <= stamp < m.week_bounds[i + 1]:
                     # This data is kept in memory, and written in batches.
-                    filename = "/var/local/twitterdb/%s-%d.json" \
-                               % (m.file_stem, i)
-                    pending_writes.append((filename,
-                                           prune_tweet(tweet, desired_fields)))
+                    filestem = "%s/%s" % (output, m.file_stem)
+                    pending_writes.append(("%s-%d.json" % (filestem, i),
+                                           prune_dict(tweet, desired_fields)))
+                    pending_writes.append(("%s.text" % (filestem,),
+                                           "* " + tweet['text'].strip()))
+                                           
             else:
                 stats['out of period'] += 1
 
         # Done processing this tweet.
         count += 1
 
-        if count % 1000 == 0:
+        if count % READS_PER_WRITE == 0:
             # Sort pending_writes on filename to minimize file object churn.
             pending_writes.sort(key=lambda x: x[0])
-            # Write them. #### IMPLEMENT ME!
+            # Write them.
+            for filename, obj in pending_writes:
+                f = get_writer(filename)
+                f.send(obj)
+                f.send('\n')
             # Maybe flush them?
             # Clear pending_writes.
             pending_writes.clear()
 
+    pending_writes.sort(key=lambda x: x[0])
+    file_map = {}                       # #### UGH!!
+    file_lru = []
+    for filename, obj in pending_writes:
+        f = get_writer(filename)
+        f.send(obj)
+        f.send('\n')
 
-def break_this_motherfucker_up():
 
-# A bunch of code for handling the open files.
-
-    f = file_map.get(filename)
-    # .append() because .remove() deletes the first instance.
-    file_lru.append(filename)
-    # #### This should be a "while".
-    if f is None:
-        # #### Need to check for failure, as we should end
-        # up with around 285*9 = 2565 files.
-        # Mac OS X allows up to 256 open files.  Linux allows
-        # 1024.
-        f = open(filename, "a")
-        file_map[filename] = f
-        if length(file_lru) > 200:
-            lru = file_lru.pop(0)
-            file_map[lru].close()
-            del file_map[lru]
-    else:
-        file_lru.remove(filename)
-    
+# #### UNIMPLEMENTED
+def select_movie_tweets():
     for tweet in dataset:
         #     Create a dict to hold movie statistics and data.
         movie_data = {'title': "The DUFF",
@@ -331,7 +389,8 @@ def break_this_motherfucker_up():
                 movie_found = True
                 #     The r.h.s. uses .get() to avoid KeyError.  It is also
                 # much more efficient than if ... then ... else.
-                movie_data['includes'][phrase] = movie_data['includes'].get(phrase, 0) + 1
+                movie_data['includes'][phrase] = \
+                    movie_data['includes'].get(phrase, 0) + 1
         if not movie_found:
             continue                # Don't record this tweet.
     
@@ -339,18 +398,21 @@ def break_this_motherfucker_up():
         for phrase in movie_excludes:
             if phrase in text:
                 movie_ignore = True
-                movie_data['excludes'][phrase] = movie_data['excludes'].get(phrase, 0) + 1
+                movie_data['excludes'][phrase] = \
+                    movie_data['excludes'].get(phrase, 0) + 1
         if movie_ignore:
             continue                # Don't record this tweet.
     
         movie_data['tweets'].append(tweet)
 
 if __name__ == "__main__":
-    json_files = parse_command_line()
+    output, *json_files = parse_command_line()
+    dataset = json_source(json_files)
     if json_files:
         print("There are %d JSON files, estimated %.1fGB." % (
                 len(json_files), len(json_files) / 20),
               file=stderr)
+        partition_tweets(dataset, output)
     else:
         print("You didn't provide any arguments.  Is that right?")
 

@@ -94,7 +94,7 @@ class Movie(object):
 
 
 def populate_movie_list(dates, stars):
-    stems = {}
+    stems = set()
     for elt in dates:
         date = elt[0]
         for name in elt[1:]:
