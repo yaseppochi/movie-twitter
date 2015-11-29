@@ -3,6 +3,7 @@
 import argparse
 from collections import Counter
 import json
+import logging
 from movie import Movie
 import os.path
 import re
@@ -45,7 +46,7 @@ NOTE: folder names should not have trailing slashes.
         srclist = args.sources
     stampre = r"(?:.*/)?2015[01][0-9][0-3][0-9]\.[0-2][0-9][0-6][0-9][0-6][0-9]$"
     stampre = re.compile(stampre)
-    sources = [args.output]             # #### FIXME!!!!
+    sources = []
 
     def add_one(item, sources):
         if item.endswith(".json"):
@@ -76,12 +77,17 @@ NOTE: folder names should not have trailing slashes.
 
     for x in srclist:
         add_one(x, sources) or add_many(x, sources) or add_folder(x, sources)
-    return sources
+    args.sources = sources
+    return args
 
 
 def json_source(file_list):
+
+    log = logging.getLogger("tweets")
+
     decoder = json.JSONDecoder()
     for f in file_list:
+        log.start(f)
         with open(f) as stream:         # TODO: Handle Twitter API too.
             s = stream.read()           # TODO: Online algorithm.
                                         # Do it with a JSON(Stream)?Decoder?
@@ -98,6 +104,7 @@ def json_source(file_list):
                 start = start + offset
                 yield tweet
             except Exception as e:
+                # do this with log.error
                 print("file =", f, file=stderr)
                 print("start = ", start, "end =", start+20000, file=stderr)
                 print("Error:", e, file=stderr)
@@ -108,13 +115,14 @@ def json_source(file_list):
                     start = start + offset
                     yield tweet
                 except Exception as e:
+                    # do this with log.error
                     print("file =", f, file=stderr)
                     print("start = ", start, "end =", end, file=stderr)
                     print("Error:", e, file=stderr)
                     # The file is hosed.  Bail out.
                     # We recognize this by the repeated error at same start.
                     break
-
+        log.done(f)
 
 def count_keys(tweets):
     tdist = Counter()
@@ -330,7 +338,7 @@ def partition_tweets(dataset, output):
                     pending_writes.append(("%s-%d.json" % (filestem, i),
                                            prune_dict(tweet, desired_fields)))
                     pending_writes.append(("%s.text" % (filestem,),
-                                           "* " + tweet['text'].strip()))
+                                           "* " + tweet['text'].strip().translate({10 : 32})))
                                            
             else:
                 stats['out of period'] += 1
@@ -406,13 +414,26 @@ def select_movie_tweets():
         movie_data['tweets'].append(tweet)
 
 if __name__ == "__main__":
-    output, *json_files = parse_command_line()
+    args = parse_command_line()
+    json_files = args.sources
     dataset = json_source(json_files)
+    
+    logging.addLevelName(logging.INFO, "START")
+    logging.addLevelName(logging.WARNING, "DONE")
+    format = logging.Formatter("%(levelname)-6s %(message)s %(asctime)s")
+    handler = logging.FileHandler("%s/source.log" % args.output)
+    handler.setFormatter(format)
+    source_log = logging.getLogger("tweets")
+    source_log.setLevel(logging.INFO)
+    source_log.addHandler(handler)
+    source_log.start = source_log.info
+    source_log.done = source_log.warning
+
     if json_files:
         print("There are %d JSON files, estimated %.1fGB." % (
                 len(json_files), len(json_files) / 20),
               file=stderr)
-        partition_tweets(dataset, output)
+        partition_tweets(dataset, args.output)
     else:
         print("You didn't provide any arguments.  Is that right?")
 
