@@ -347,6 +347,8 @@ def partition_tweets(dataset, output):
         count += 1
 
         if count % READS_PER_WRITE == 0:
+            print("Writing %d records, %d cycles" \
+                  % (len(pending_writes), count / READS_PER_WRITE))
             # Sort pending_writes on filename to minimize file object churn.
             pending_writes.sort(key=lambda x: x[0])
             # Write them.
