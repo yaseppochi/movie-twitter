@@ -371,6 +371,7 @@ PUNCT = { ord(',') : None,
           ord(';') : None,
           ord('.') : None,
           ord('-') : ' ',
+          ord('/') : ' ',
           }
 
 MOVIES_STARS = [
