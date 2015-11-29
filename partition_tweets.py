@@ -354,8 +354,12 @@ def partition_tweets(dataset, output):
             # Write them.
             for filename, obj in pending_writes:
                 f = get_writer(filename)
-                f.send(obj)
-                f.send('\n')
+                try:
+                    f.send(obj)
+                    f.send('\n')
+                except StopIteration:
+                    print("Crash on %s." % (filename,))
+                    raise
             # Maybe flush them?
             # Clear pending_writes.
             pending_writes.clear()
