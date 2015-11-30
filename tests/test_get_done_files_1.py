@@ -13,4 +13,4 @@ else:
         print("   ", done_sources[i])
     print("Last five:")
     for i in range(5, 0, -1):
-        print("   ", done_sources[-i]))
+        print("   ", done_sources[-i])
