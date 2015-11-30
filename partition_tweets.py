@@ -48,10 +48,13 @@ NOTE: folder names should not have trailing slashes.
     stampre = re.compile(stampre)
     sources = []
 
+    done_sources = get_done_files(os.path.join(args.output, "sources.log"))
+
     def add_one(item, sources):
         if item.endswith(".json"):
             if os.path.isfile(item):
-                sources.append(item)
+                if item not in done_sources:
+                    sources.append(item)
             else:
                 print("Ignoring nonfile: %s" % (item,), file=stderr)
             return True
@@ -80,6 +83,18 @@ NOTE: folder names should not have trailing slashes.
     args.sources = sources
     return args
 
+
+def get_done_files(logfile):
+    """
+    Return set of completed files to exclude, parsed from source.log.
+    """
+
+    done = set()
+    with open(logfile) as f:
+        for line in f:
+            if line.startswith("DONE "):
+                done.add(line.split()[1])
+    return(done)
 
 def json_source(file_list):
 
@@ -285,6 +300,7 @@ stats = {}
 
 def partition_tweets(dataset, output):
 
+    log = logging.getLogger("tweets")
     count = 0                           # Count of tweets (fully) processed.
 
     # Various statistics for checking on Twitter API.
@@ -302,8 +318,8 @@ def partition_tweets(dataset, output):
         try:
             lang = tweet.get('lang')
         except Exception as e:
-            print("ERROR after", pending_writes[-2][0], 
-                  pending_writes[-2][1]['id'])
+            log.error("Could not .get('lang') after %d in %s" \
+                      % (pending_writes[-2][1]['id'], pending_writes[-2][0]))
             print("Object:", tweet, "can't .get('lang')")
             continue
         if not lang:
