@@ -1,4 +1,9 @@
+# test setup
+import sys
+sys.path.append("..")
+
 import os.path
+from partition_tweets import get_done_files
 
 log = "/var/local/twitterdb/source.log"
 
