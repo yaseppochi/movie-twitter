@@ -1,6 +1,6 @@
 import os.path
 
-log = "/var/local/twitterdb/sources.log"
+log = "/var/local/twitterdb/source.log"
 
 if not os.path.exists(log):
     print(log, "not found.  Are you on the right host?")

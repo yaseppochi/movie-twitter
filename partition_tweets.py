@@ -48,7 +48,7 @@ NOTE: folder names should not have trailing slashes.
     stampre = re.compile(stampre)
     sources = []
 
-    done_sources = get_done_files(os.path.join(args.output, "sources.log"))
+    done_sources = get_done_files(os.path.join(args.output, "source.log"))
 
     def add_one(item, sources):
         if item.endswith(".json"):
