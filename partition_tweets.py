@@ -302,8 +302,8 @@ def partition_tweets(dataset, output):
         try:
             lang = tweet.get('lang')
         except Exception as e:
-            print("ERROR after", pending_writes[-1][0], 
-                  pending_writes[-1][1]['id'])
+            print("ERROR after", pending_writes[-2][0], 
+                  pending_writes[-2][1]['id'])
             print("Object:", tweet, "can't .get('lang')")
             continue
         if not lang:
