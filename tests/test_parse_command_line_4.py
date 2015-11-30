@@ -4,9 +4,6 @@
 import sys
 sys.path.append("..")
 
-# test data
-#sys.argv[1:] = ["data"]
-
 # test scaffolding
 from partition_tweets import parse_command_line
 
