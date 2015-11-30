@@ -12,7 +12,8 @@ if not os.path.exists(log):
 else:
     done_sources = list(get_done_files(log))
     done_sources.sort()
-    print("There are ", len(done_sources), " in ", log, ".", sep="")
+    print("There are ", len(done_sources), " done entries in ", log, ".",
+          sep="")
     print("First five:")
     for i in range(5):
         print("   ", done_sources[i])
