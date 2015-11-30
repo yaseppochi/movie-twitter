@@ -299,7 +299,13 @@ def partition_tweets(dataset, output):
     for tweet in dataset:
 
         # Short-circuit (ignore) non-English tweets.
-        lang = tweet.get('lang')
+        try:
+            lang = tweet.get('lang')
+        except Exception as e:
+            print("ERROR after", pending_writes[-1][0], 
+                  pending_writes[-1][1]['id'])
+            print("Object:", tweet, "can't .get('lang')")
+            continue
         if not lang:
             stats['no lang'] += 1
             continue
