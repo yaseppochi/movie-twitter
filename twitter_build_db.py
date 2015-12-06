@@ -1,4 +1,5 @@
 import csv
+import moviedata as mdb
 import os.path
 import sqlite3 as sql
 from twitter_csv_to_sql import row_csv_to_sql
@@ -21,13 +22,13 @@ movie_table_create_command = "create table movies ( " \
     "GenreCheck integer, " \
     "Sources integer, " \
     "ScheduledRelease date, " \
-    "InSample boolean, " \
+    "InSample integer, " \
     "NotesSource text, " \
     "Includes text," \
-    "MustInclude boolean, " \
+    "MustInclude integer, " \
     "Excludes text," \
     "Director text, " \
-    "Actors text"
+    "Actors text" \
     ")"
 
 genre_table_create_command = "create table genres ( " \
@@ -157,7 +158,7 @@ def populate_tables_from_csv():
         c.execute("insert into movies values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                   row[0:2] + [canonical_name.get(row[2], row[2])] + row[3:6]
                   + row[14:17] + calculate_genre(row) + row[26:27]
-                  + [0, None, True] + [None] * 6)    # 0 = From anna's CSV
+                  + [0, None, 0] + [None] * 6)    # 0 = From anna's CSV
         for w in range(8):
             c.execute("insert into weeks values (?,?,?,?,?)",
                       (row[2], w, row[6 + w], row[27 + w], row[35 + w]))
@@ -175,7 +176,6 @@ def populate_tables_from_moviedata():
     if DEBUG > 1:
         print(namelist)
     # populate movies
-    import moviedata as mdb
     mdb_movies = []
     for releasedate in mdb.DATES_MOVIES:
         rd = releasedate[0]
@@ -194,14 +194,14 @@ def populate_tables_from_moviedata():
                       "ScheduledRelease=?," \
                       "InSample=? " \
                       "where Name=?",
-                      (2, date, False, movie))
+                      (2, date, 0, movie))
         else:
             # create new record
             itemno += 1
             c.execute("insert into " \
                       "movies (Name,Items,Sources,ScheduledRelease,InSample) " \
                       "values (?,?,?,?,?)",
-                      (movie, itemno, 1, date, False))
+                      (movie, itemno, 1, date, 0))
     db.commit()
     c.close()
     db.close()
@@ -212,20 +212,39 @@ def populate_tables_from_165_notes():
     db = sql.connect("twitter.sql")
     c = db.cursor()
     # populate movies
-    r = csv.reader(open("165_notes.csv"))
+    r = csv.reader(open("165-notes.csv", encoding="latin1"))
     next(r)
     for row in r:
+        print("Updating ", row[0])
         c.execute("update movies set " \
                   "NotesSource=?, " \
                   "Includes=?," \
                   "MustInclude=?, " \
                   "Excludes=?," \
-                  "Director=?, " \
-                  "Actors=?"
+                  "Director=?," \
+                  "Actors=?," \
+                  "InSample=?" \
                   "where Name=?",
                   (row[8], row[4], True if row[7] == "yes" else False,
-                   row[5], row[1], row[2],
-                   canonical_name[row[0]]))
+                   row[5], row[1], row[2], 1,
+                   canonical_name.get(row[0],row[0])))
+    db.commit()
+    c.close()
+    db.close()
+
+
+def populate_actors_from_moviedata():
+    # retrieve list of names, if present, update
+    db = sql.connect("twitter.sql")
+    c = db.cursor()
+    # populate movies
+    for movie, *actors in mdb.MOVIES_STARS:
+        actors = ", ".join(actors)
+        print(movie, "-", actors)
+        c.execute("update movies set " \
+                  "Actors=?" \
+                  "where Name=?",
+                  (actors, movie))
     db.commit()
     c.close()
     db.close()
@@ -252,6 +271,9 @@ if __name__ == "__main__":
         populate_tables_from_moviedata()
         print("done.\npopulate tables from 165-notes ... ", end='')
         populate_tables_from_165_notes()
+        print("done.\npopulate_actors_from_moviedata ... ", end='')
+        # #### This may overwrite data from 165-notes.csv.
+        populate_actors_from_moviedata()
         print("done.")
     db = sql.connect("twitter.sql")
     c = db.cursor()
