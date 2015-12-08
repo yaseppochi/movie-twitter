@@ -392,7 +392,7 @@ if __name__ == "__main__":
         print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    csvfile = os.path.join(EXEC_PREFIX, "movie-week-sentiment.csv")
+    csvfile = os.path.join(EXEC_PREFIX, "movie-week-sentiment-1.csv")
     printheader = not os.path.exists(csvfile)
     with open(csvfile, "a") as f:
         if printheader:
@@ -429,7 +429,7 @@ if __name__ == "__main__":
         c.close()
         db.close()
 
-        sample = resample(sample, PREFIX, 0, 50)
+        sample = resample(sample, PREFIX, 75, 125)
         print(sample, sys.stderr)
     
         for movie in sample:
