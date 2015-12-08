@@ -255,7 +255,7 @@ class Movie(object):
                                         # 4 Count of tweets included
             len(tids_seen),             # 5 Count of unique tweets by ID
             0,                          # 6 Count of duplicates in database
-            0,                          # 7 Estimate of retweet count
+            0,                          # 7 Estimate of valid retweet count
             0,                          # 8 Count of tokens processed
             0,                          # 9 Count of valent tokens found
             0.0,                        # 10 Average positive per tweet
@@ -272,7 +272,9 @@ class Movie(object):
             0.0,                        # 19 Average urls per tweet
             ]
         for r in tids_seen.values():
-            results[6] += r[0]
+            results[6] += r[0] - 1
+            if len(r) < 3:
+                continue
             results[7] += r[1]
             results[8] += r[2]
             results[9] += r[3]
