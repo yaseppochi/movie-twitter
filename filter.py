@@ -342,7 +342,7 @@ def resample(sample, prefix, start, end):
         result.append((m, sz))
     result.sort(key=lambda x: x[1])
     result = result[start : end]
-    print(y[1] // 1000 for y in result)
+    print(*(y[1] // 1000 for y in result))
     return [y[0] for y in result]
     
 
