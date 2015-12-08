@@ -16,7 +16,7 @@ import re
 import sqlite3 as sql
 import sys
 
-PREFIX = "/var/local/twitterdb"         # #### Horrible hack!
+PREFIX = ".."                           # #### Horrible hack!
 
 url_re = re.compile(r"(?:ht|f)tps?://\S*")
 
