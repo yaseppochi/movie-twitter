@@ -137,7 +137,7 @@ class Movie(object):
         self.ngram = NGram(name, self.minwds)
         self.includes = [self.ngram] if len(self.ngram) >= self.minwds else []
         self.excludes = []
-        db = sql.connect(os.path.join(PREFIX, "/twitter.sql"))
+        db = sql.connect(os.path.join(PREFIX, "twitter.sql"))
         c = db.cursor()
         c.execute("select Includes,MustInclude,Excludes,Director,Actors,"
                   "ReleaseMonth,ScheduledRelease "
@@ -353,7 +353,7 @@ if __name__ == "__main__":
         print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    with open(os.path.join(EXEC_PREFIX, "/movie-week-sentiment.csv"), "a") as f:
+    with open(os.path.join(EXEC_PREFIX, "movie-week-sentiment.csv"), "a") as f:
         print(",".join([
                 "Name of movie",
                 "Total tweets in file",
@@ -380,7 +380,7 @@ if __name__ == "__main__":
                 ]),
               file=f)
         # get movie list
-        db = sql.connect(os.path.join(PREFIX, "/twitter.sql"))
+        db = sql.connect(os.path.join(PREFIX, "twitter.sql"))
         c = db.cursor()
         c.execute("select Name from movies where InSample=1")
         sample = [x[0] for x in c]
