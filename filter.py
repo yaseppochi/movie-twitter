@@ -346,7 +346,8 @@ if __name__ == "__main__":
                 "Average urls per tweet",
                 "Hash repeat count",
                 "Week",
-                ]))
+                ]),
+              file=f)
     
     # get movie list
     # for movie in sample: m = Movie
