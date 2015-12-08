@@ -194,14 +194,15 @@ class Movie(object):
                 tids_seen[tid][0] += 1
                 continue
             tids_seen[tid] = [1, 0]
-            tweet = tweet.get('retweeted_status', tweet)
-            tid = tweet['id']
-            rcnt = tweet['retweet_count']
-            if tid in tids_seen:
-                # Keep track of maximum retweet counts.
-                tids_seen[tid][1] = max(rcnt, tids_seen[tid][1])
-                continue
-            tids_seen[tid] = [0, rcnt]
+            if 'retweeted_status' in tweet:
+                tweet = tweet['retweeted_status']
+                tid = tweet['id']
+                rcnt = tweet['retweet_count']
+                if tid in tids_seen:
+                    # Keep track of maximum retweet counts.
+                    tids_seen[tid][1] = max(rcnt, tids_seen[tid][1])
+                    continue
+                tids_seen[tid] = [0, rcnt]
 
             tokens = prep_text(tweet['text'])
 
