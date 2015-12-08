@@ -125,6 +125,7 @@ class Movie(object):
     minwds = 2
     prefix = "/var/local/twitterdb"
     wdb = init_word_db()
+    hashes_seen = set()
 
     def __init__(self, name, minwds=None):
         self.name = name
@@ -163,7 +164,7 @@ class Movie(object):
              if w not in moviedata.STOPSET]
             )
 
-    def process_week(self, week, db):
+    def process_week(self, week):
         """
         1.  Get the JSON source.
         2.  Read tweets.
@@ -182,7 +183,6 @@ class Movie(object):
         exclude_matches = 0
         must_include_mismatches = 0
         tids_seen = {}
-        hashes_seen = set()
         hash_repeat_count = 0
 
         # Connect to word database.
@@ -212,10 +212,10 @@ class Movie(object):
 
             tokens = prep_text(tweet['text'])
             tokhash = hash(tokens)
-            if tokhash in hashes_seen:
+            if tokhash in self.hashes_seen:
                 hash_repeat_count += 1
             else:
-                hashes_seen.add(tokhash)
+                self.hashes_seen.add(tokhash)
 
             for ngram in self.excludes:
                 if ngram.match(tokens):
@@ -280,6 +280,7 @@ class Movie(object):
             0.0,                        # 18 Average hashtags per tweet
             0.0,                        # 19 Average urls per tweet
             hash_repeat_count,          # 20 Hash repeat count
+            week,                       # 21 Week
             ]
         for r in tids_seen.values():
             results[6] += r[0] - 1
