@@ -62,7 +62,7 @@ def prep_text(s):
     """
 
     s = url_re.sub("", s.lower()).translate(STOPPUNCT)
-    return stopword_re.sub("", s).split()
+    return tuple(stopword_re.sub("", s).split())
 
 class NGram(list):
     """
@@ -175,6 +175,8 @@ class Movie(object):
         exclude_matches = 0
         must_include_mismatches = 0
         tids_seen = {}
+        hashes_seen = set()
+        hash_repeat_count = 0
 
         # Initialize word database.
         db = sql.connect(":memory:")
@@ -205,6 +207,11 @@ class Movie(object):
                 tids_seen[tid] = [0, rcnt]
 
             tokens = prep_text(tweet['text'])
+            tokhash = hash(tokens)
+            if tokhash in hashes_seen:
+                hash_repeat_count += 1
+            else:
+                hashes_seen.add(tokhash)
 
             for ngram in self.excludes:
                 if ngram.match(tokens):
@@ -242,7 +249,6 @@ class Movie(object):
                                         # url_count_index = 7
             # #### Collect user stats here.
             # Done with this tweet.
-            print(tid_values)
 
         # 9a.  Count ...
         results = [
@@ -269,6 +275,7 @@ class Movie(object):
             0.0,                        # 17 Average negative per valent token
             0.0,                        # 18 Average hashtags per tweet
             0.0,                        # 19 Average urls per tweet
+            hash_repeat_count,          # 20 Hash repeat count
             ]
         for r in tids_seen.values():
             results[6] += r[0] - 1
