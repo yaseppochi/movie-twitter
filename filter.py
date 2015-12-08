@@ -17,6 +17,8 @@ import sqlite3 as sql
 import sys
 
 PREFIX = ".."                           # #### Horrible hack!
+EXEC_PREFIX = "."                       # #### Horrible hack two!
+START = END = None                      # #### Horrible hack three!
 
 url_re = re.compile(r"(?:ht|f)tps?://\S*")
 
@@ -315,6 +317,31 @@ class Movie(object):
         # 10. Record.
         return tuple(results)
 
+def resample(sample, prefix, start, end):
+    """
+    Take a list of movies in sample, determine sizes related files in prefix,
+    sort in order of size, and analyze the set from start to end, beginning
+    with the smallest movie.
+    """
+    if START is None:
+        return sample
+    result = []
+    for m in sample:
+        stem = "-".join(
+            [w for w
+             in m.translate(moviedata.PUNCT).lower().split()
+             if w not in moviedata.STOPSET]
+            )
+        n = len(stem) + 1
+        sz = 0
+        files = os.listdir(PREFIX)
+        for fn in files:
+            if fn.startswith(stem) and fn[n + 1] != "0" \
+               and fn[n] not in "89":
+                sz += os.path.getsize(fn)
+        result.append((m, sz))
+    return [y[0] for y in sorted(result, key=lambda x: x[1])[start : end]]
+    
 
 if __name__ == "__main__":
     if 0:                               # #### Move this to a unit test.
@@ -326,7 +353,7 @@ if __name__ == "__main__":
         print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    with open(os.path.join(PREFIX, "/movie-week-sentiment.csv"), "a") as f:
+    with open(os.path.join(EXEC_PREFIX, "/movie-week-sentiment.csv"), "a") as f:
         print(",".join([
                 "Name of movie",
                 "Total tweets in file",
@@ -359,6 +386,10 @@ if __name__ == "__main__":
         sample = [x[0] for x in c]
         c.close()
         db.close()
+
+        sample = resample(sample, PREFIX, 0, 20)
+        print(sample)
+        sys.exit()
     
         for movie in sample:
             m = Movie(movie)
