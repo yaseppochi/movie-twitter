@@ -322,8 +322,7 @@ if __name__ == "__main__":
 
     # print headers to CSV
     with open("/var/local/twitterdb/movie-week-sentiment.csv", "a") as f:
-        print(",".join(
-            repr(s) for s in [
+        print(",".join([
                 "Name of movie",
                 "Total tweets in file",
                 "Count of tweets excluded by excludes",
@@ -346,7 +345,7 @@ if __name__ == "__main__":
                 "Average urls per tweet",
                 "Hash repeat count",
                 "Week",
-                ]),
+                ],
               file=f)
     
     # get movie list
