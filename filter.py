@@ -340,8 +340,10 @@ def resample(sample, prefix, start, end):
                and fn[n] not in "89":
                 sz += os.path.getsize(os.path.join(PREFIX, fn))
         result.append((m, sz))
-        print(sz, end = " ")
-    return [y[0] for y in sorted(result, key=lambda x: x[1])[start : end]]
+    result.sort(key=lambda x: x[1])
+    result = result[start : end]
+    print(y[1] // 1000 for y in result)
+    return [y[0] for y in result]
     
 
 if __name__ == "__main__":
