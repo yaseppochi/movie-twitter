@@ -201,7 +201,7 @@ class Movie(object):
                 tids_seen[tid][1] = max(tweet['retweet_count'], tids_seen[tid][1])
                 continue
 
-            tokens = prep_text(tweet)
+            tokens = prep_text(tweet['text'])
 
             for ngram in self.excludes:
                 if ngram.match(tokens):
