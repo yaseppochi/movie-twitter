@@ -127,12 +127,13 @@ class NGram(list):
         May not find the longest match if a word appears multiple times.
         """
         n = len(self)
+        p = len(slist)
         minwds = (minwds or self.minwds)
         result = []
-        for i in range(len(slist) - minwds):
+        for i in range(p - minwds):
             for j in range(n - minwds):
                 for k in range(j, n):
-                    if self[k] == slist[i]:
+                    if i < p and self[k] == slist[i]:
                         i += 1
                     else:
                         break
