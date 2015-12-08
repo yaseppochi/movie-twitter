@@ -133,18 +133,22 @@ class Movie(object):
         c.close()
         self.must_match_include = must
         # #### Refactor to make includes empty on not must?
-        dirs = dirs.split("[,/]")
-        for x in dirs:
-            self.includes.append(NGram(x,1))
-        stars = stars.split("[,/]")
-        for x in stars:
-            self.includes.append(NGram(x,1))
-        inc = inc.split("[,/]")
-        for x in inc:
-            self.includes.append(NGram(x))
-        exc = exc.split("[,/]")
-        for x in exc:
-            self.excludes.append(NGram(x))
+        if dirs is not None:
+            dirs = dirs.split("[,/]")
+            for x in dirs:
+                self.includes.append(NGram(x,1))
+        if stars is not None:
+            stars = stars.split("[,/]")
+            for x in stars:
+                self.includes.append(NGram(x,1))
+        if inc is not None:
+            inc = inc.split("[,/]")
+            for x in inc:
+                self.includes.append(NGram(x))
+        if exc is not None:
+            exc = exc.split("[,/]")
+            for x in exc:
+                self.excludes.append(NGram(x))
         # #### Duplicated algorithm from movie.Movie.__init__.
         self.stem = "-".join(
             [w for w
