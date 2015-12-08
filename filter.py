@@ -361,11 +361,11 @@ if __name__ == "__main__":
     
         for movie in sample:
             m = Movie(movie)
-            for i in range(8):
+            for week in range(8):
                 try:
                     print('"%s",%d,%d,%d,%d,%d,%d,%d,%d,%d,'
                           '%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,'
-                          '%.3f,%.3f,%d,%d' % m.process_week(i),
+                          '%.3f,%.3f,%d,%d' % m.process_week(week),
                           file=f)
                     f.flush()
                 except FileNotFoundError:
