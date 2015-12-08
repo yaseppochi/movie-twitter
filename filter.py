@@ -226,12 +226,10 @@ class Movie(object):
             for token in tokens:
                 cur.execute(term_extract_command, (token,))
                 res = cur.fetchone()
-                if res is not None:
+                if res is not None and res[1] is not None:
                     m += 1
-                    if res[1] is None or res[2] is None:
-                        print("broken valence:", token, res[1], res[2])
-                    pos += res[1] or 0.0
-                    neg += res[2] or 0.0
+                    pos += res[1]
+                    neg += res[2]
             tid_values.append(n)        # token_count_index = 2
             tid_values.append(m)        # valent_count_index = 3
             tid_values.append(pos)      # tweet_pos_index = 4
