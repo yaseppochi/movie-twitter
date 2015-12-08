@@ -102,7 +102,7 @@ def json_source(file_list):
 
     decoder = json.JSONDecoder()
     for f in file_list:
-        log.start(f)
+        log.info(f)
         with open(f) as stream:         # TODO: Handle Twitter API too.
             s = stream.read()           # TODO: Online algorithm.
                                         # Do it with a JSON(Stream)?Decoder?
@@ -137,7 +137,7 @@ def json_source(file_list):
                     # The file is hosed.  Bail out.
                     # We recognize this by the repeated error at same start.
                     break
-        log.done(f)
+        log.warning(f)
 
 def count_keys(tweets):
     tdist = Counter()
