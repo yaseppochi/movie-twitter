@@ -4,7 +4,7 @@ Collect natural language information about tweet texts.
 
 from build_snw_db import (
     create_tables,
-    populate_from_sentiwordnet
+    populate_from_sentiwordnet,
     term_extract_command,
     )
 from math import log1p
