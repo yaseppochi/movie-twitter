@@ -111,6 +111,12 @@ class NGram(list):
                     break
         return result
 
+def init_word_db():
+    db = sql.connect(":memory:")
+    create_tables(db)
+    populate_from_sentiwordnet(db)
+    return db
+
 class Movie(object):
     """
     Construct lists of include and exclude NGrams.
@@ -118,6 +124,7 @@ class Movie(object):
 
     minwds = 2
     prefix = "/var/local/twitterdb"
+    wdb = init_word_db()
 
     def __init__(self, name, minwds=None):
         self.name = name
@@ -125,7 +132,7 @@ class Movie(object):
         self.ngram = NGram(name, self.minwds)
         self.includes = [self.ngram] if len(self.ngram) >= self.minwds else []
         self.excludes = []
-        c = sql.connect("twitter.sql").cursor()
+        c = sql.connect("/var/local/twitterdb/twitter.sql").cursor()
         c.execute("select Includes,MustInclude,Excludes,Director,Actors,"
                   "ReleaseMonth,ScheduledRelease "
                   "from movies where name=?", (name,))
@@ -156,7 +163,7 @@ class Movie(object):
              if w not in moviedata.STOPSET]
             )
 
-    def process_week(self, week):
+    def process_week(self, week, db):
         """
         1.  Get the JSON source.
         2.  Read tweets.
@@ -178,11 +185,8 @@ class Movie(object):
         hashes_seen = set()
         hash_repeat_count = 0
 
-        # Initialize word database.
-        db = sql.connect(":memory:")
-        create_tables(db)
-        populate_from_sentiwordnet(db)
-        cur = db.cursor()
+        # Connect to word database.
+        cur = self.wdb.cursor()
 
         filename = "%s/%s-%d.json" % (self.prefix, self.stem, week)
         for tweet in json_source([filename]): # These should all be tweets.

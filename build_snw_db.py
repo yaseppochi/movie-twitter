@@ -30,7 +30,7 @@ def create_tables(db):
     db.commit()
 
 def populate_from_sentiwordnet(db):
-    with open("sentiwordnet-valent.txt") as f:
+    with open("/var/local/twitterdb/sentiwordnet-valent.txt") as f:
         c = db.cursor()
         for line in f:
             line = line.strip()
