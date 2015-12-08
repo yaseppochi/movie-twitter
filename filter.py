@@ -311,16 +311,17 @@ class Movie(object):
         results[18] = results[18] / results[5]
         results[19] = results[19] / results[5]
         # 10. Record.
-        return results
+        return tuple(results)
 
 
 if __name__ == "__main__":
-    s = prep_text("1 2 3 4 5 & 6'")
-    n1 = NGram("3 4 1", 3)
-    n2 = NGram("3 4 1", 2)
-    print("slist =", s)
-    print("n1 match is", n1.match(s))
-    print("n2 match is", n2.match(s))
+    if 0:                               # #### Move this to a unit test.
+        s = prep_text("1 2 3 4 5 & 6'")
+        n1 = NGram("3 4 1", 3)
+        n2 = NGram("3 4 1", 2)
+        print("slist =", s)
+        print("n1 match is", n1.match(s))
+        print("n2 match is", n2.match(s))
 
     # print headers to CSV
     with open("/var/local/twitterdb/movie-week-sentiment.csv", "a") as f:
@@ -349,16 +350,21 @@ if __name__ == "__main__":
                 "Week",
                 ]),
               file=f)
-    # get movie list
-    db = sql.connect("/var/local/twitterdb/twitter.sql")
-    c = db.cursor()
-    c.execute("select Name from movies where InSample=1")
-    movie_list = [x[0] for x in c]
-    print(movie_list)
-    print(len(movie_list))
-    c.close()
-    db.close()
+        # get movie list
+        db = sql.connect("/var/local/twitterdb/twitter.sql")
+        c = db.cursor()
+        c.execute("select Name from movies where InSample=1")
+        sample = [x[0] for x in c]
+        c.close()
+        db.close()
     
-    # for movie in sample: m = Movie
-    #   for i in range(8): print to csv m.process_week(i)
+        for movie in sample:
+            m = Movie
+            for i in range(8):
+                print('"%s",%d,%d,%d,%d,%d,%d,%d,%d,%d,'
+                      '%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,'
+                      '%.3f,%.3f,%d,%d' % m.process_week(i),
+                      file=f)
+                f.flush()
     # close up shop.
+    Movie.wdb.close()
