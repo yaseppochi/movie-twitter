@@ -4,7 +4,7 @@ Collect natural language information about tweet texts.
 
 from build_snw_db import (
     create_tables,
-    populate_from_sentiwordnet,
+    populate_from_sentiwordnet
     term_extract_command,
     )
 from math import log1p
@@ -15,6 +15,8 @@ import os.path
 import re
 import sqlite3 as sql
 import sys
+
+PREFIX = "/var/local/twitterdb"         # #### Horrible hack!
 
 url_re = re.compile(r"(?:ht|f)tps?://\S*")
 
@@ -115,7 +117,7 @@ class NGram(list):
 def init_word_db():
     db = sql.connect(":memory:")
     create_tables(db)
-    populate_from_sentiwordnet(db)
+    populate_from_sentiwordnet(db, PREFIX)
     return db
 
 class Movie(object):
@@ -124,7 +126,6 @@ class Movie(object):
     """
 
     minwds = 2                          # #### Unused in practice?
-    prefix = "/var/local/twitterdb"
     wdb = init_word_db()
     hashes_seen = set()
 
@@ -134,7 +135,7 @@ class Movie(object):
         self.ngram = NGram(name, self.minwds)
         self.includes = [self.ngram] if len(self.ngram) >= self.minwds else []
         self.excludes = []
-        db = sql.connect("/var/local/twitterdb/twitter.sql")
+        db = sql.connect(os.path.join(PREFIX, "/twitter.sql"))
         c = db.cursor()
         c.execute("select Includes,MustInclude,Excludes,Director,Actors,"
                   "ReleaseMonth,ScheduledRelease "
@@ -325,7 +326,7 @@ if __name__ == "__main__":
         print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    with open("/var/local/twitterdb/movie-week-sentiment.csv", "a") as f:
+    with open(os.path.join(PREFIX, "/movie-week-sentiment.csv"), "a") as f:
         print(",".join([
                 "Name of movie",
                 "Total tweets in file",
@@ -352,7 +353,7 @@ if __name__ == "__main__":
                 ]),
               file=f)
         # get movie list
-        db = sql.connect("/var/local/twitterdb/twitter.sql")
+        db = sql.connect(os.path.join(PREFIX, "/twitter.sql"))
         c = db.cursor()
         c.execute("select Name from movies where InSample=1")
         sample = [x[0] for x in c]

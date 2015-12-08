@@ -29,8 +29,8 @@ def create_tables(db):
     c.close()
     db.commit()
 
-def populate_from_sentiwordnet(db):
-    with open("/var/local/twitterdb/sentiwordnet-valent.txt") as f:
+def populate_from_sentiwordnet(db, prefix="/var/local/titterdb"):
+    with open(os.path.join(prefix, "sentiwordnet-valent.txt")) as f:
         c = db.cursor()
         for line in f:
             line = line.strip()
