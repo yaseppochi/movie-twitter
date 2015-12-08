@@ -338,7 +338,7 @@ def resample(sample, prefix, start, end):
         for fn in files:
             if fn.startswith(stem) and fn[n + 1] != "0" \
                and fn[n] not in "89":
-                sz += os.path.getsize(fn)
+                sz += os.path.getsize(os.path.join(PREFIX, fn))
         result.append((m, sz))
         print(sz, end = " ")
     return [y[0] for y in sorted(result, key=lambda x: x[1])[start : end]]
