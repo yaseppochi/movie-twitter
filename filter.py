@@ -205,10 +205,12 @@ class Movie(object):
                 tid = tweet['id']
                 rcnt = tweet['retweet_count']
                 if tid in tids_seen:
-                    # Keep track of maximum retweet counts.
-                    tids_seen[tid][1] = max(rcnt, tids_seen[tid][1])
+                    # Keep track of repeats and maximum retweet counts.
+                    seen = tids_seen[tid]
+                    seen[0] += 1
+                    seen[1] = max(rcnt, seen[1])
                     continue
-                tids_seen[tid] = [0, rcnt]
+                tids_seen[tid] = [1, rcnt]
 
             tokens = prep_text(tweet['text'])
             tokhash = hash(tokens)
@@ -283,7 +285,7 @@ class Movie(object):
             week,                       # 21 Week
             ]
         for r in tids_seen.values():
-            results[6] += r[0] - 1
+            results[6] += r[0]
             if len(r) < 3:
                 continue
             results[7] += r[1]
