@@ -155,8 +155,6 @@ class Movie(object):
              in self.name.translate(moviedata.PUNCT).lower().split()
              if w not in moviedata.STOPSET]
             )
-        assert(self.words)
-        self.file_stem = "-".join(self.words)
 
     def process_week(self, week):
         """
