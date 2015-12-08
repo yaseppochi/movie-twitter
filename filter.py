@@ -323,8 +323,7 @@ def resample(sample, prefix, start, end):
     sort in order of size, and analyze the set from start to end, beginning
     with the smallest movie.
     """
-    if START is None:
-        print("bailing")
+    if start is None:
         return sample
     result = []
     for m in sample:
@@ -342,7 +341,7 @@ def resample(sample, prefix, start, end):
                 sz += os.path.getsize(fn)
         result.append((m, sz))
         print(sz, end = " ")
-    return [y for y in sorted(result, key=lambda x: x[1])[start : end]]
+    return [y[0] for y in sorted(result, key=lambda x: x[1])[start : end]]
     
 
 if __name__ == "__main__":
