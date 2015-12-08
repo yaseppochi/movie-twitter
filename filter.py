@@ -319,3 +319,36 @@ if __name__ == "__main__":
     print("slist =", s)
     print("n1 match is", n1.match(s))
     print("n2 match is", n2.match(s))
+
+    # print headers to CSV
+    with open("/var/local/tweetdb/movie-week-sentiment.csv", "a") as f:
+        print(",".join(
+            repr(s) for s in [
+                "Name of movie",
+                "Total tweets in file",
+                "Count of tweets excluded by excludes",
+                "Count excluded by no includes",
+                "Count of tweets included",
+                "Count of unique tweets by ID",
+                "Count of duplicates in database",
+                "Estimate of valid retweet count",
+                "Count of tokens processed",
+                "Count of valent tokens found",
+                "Average positive per tweet",
+                "Average positive per tweet (weighted by log1p(retweets))",
+                "Average positive per token",
+                "Average positive per valent token",
+                "Average negative per tweet",
+                "Average negative per tweet (weighted by log1p(retweets))",
+                "Average negative per token",
+                "Average negative per valent token",
+                "Average hashtags per tweet",
+                "Average urls per tweet",
+                "Hash repeat count",
+                "Week",
+                ]))
+    
+    # get movie list
+    # for movie in sample: m = Movie
+    #   for i in range(8): print to csv m.process_week(i)
+    # close up shop.
