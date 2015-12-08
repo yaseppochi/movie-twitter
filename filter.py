@@ -228,8 +228,10 @@ class Movie(object):
                 res = cur.fetchone()
                 if res is not None:
                     m += 1
-                    pos += res[1]
-                    neg += res[2]
+                    if res[1] is None or res[2] is None:
+                        print("broken valence:", token, res[1], res[2])
+                    pos += res[1] or 0.0
+                    neg += res[2] or 0.0
             tid_values.append(n)        # token_count_index = 2
             tid_values.append(m)        # valent_count_index = 3
             tid_values.append(pos)      # tweet_pos_index = 4
