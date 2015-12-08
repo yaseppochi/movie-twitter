@@ -132,16 +132,16 @@ class Movie(object):
         inc, must, exc, dirs, stars, actual, scheduled = c.fetchone()
         c.close()
         self.must_match_include = must
-        dirs = dirs.split([,/])
+        dirs = dirs.split("[,/]")
         for x in dirs:
             self.includes.append(NGram(x,1))
-        stars = stars.split([,/])
+        stars = stars.split("[,/]")
         for x in stars:
             self.includes.append(NGram(x,1))
-        inc = inc.split([,/])
+        inc = inc.split("[,/]")
         for x in inc:
             self.includes.append(NGram(x))
-        exc = exc.split([,/])
+        exc = exc.split("[,/]")
         for x in exc:
             self.excludes.append(NGram(x))
         # #### Duplicated algorithm from movie.Movie.__init__.
