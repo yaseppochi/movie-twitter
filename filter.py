@@ -123,7 +123,7 @@ class Movie(object):
         self.name = name
         self.minwds = minwds or self.minwds
         self.ngram = NGram(name, self.minwds)
-        self.includes = [self.ngram] if len(self) >= self.minwds else []
+        self.includes = [self.ngram] if len(self.ngram) >= self.minwds else []
         self.excludes = []
         c = sql.connect("twitter.sql").cursor()
         c.execute("select Includes,MustInclude,Excludes,Director,Actors,"
@@ -132,6 +132,7 @@ class Movie(object):
         inc, must, exc, dirs, stars, actual, scheduled = c.fetchone()
         c.close()
         self.must_match_include = must
+        # #### Refactor to make includes empty on not must?
         dirs = dirs.split("[,/]")
         for x in dirs:
             self.includes.append(NGram(x,1))
