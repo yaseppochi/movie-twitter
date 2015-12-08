@@ -366,11 +366,11 @@ def resample(sample, prefix, start, end):
             ))
         n = len(stem) + 1
         sz = 0
-        files = os.listdir(PREFIX)
+        files = os.listdir(prefix)
         for fn in files:
             if fn.startswith(stem) and fn[n + 1] != "0" \
                and fn[n] not in "89":
-                sz += os.path.getsize(os.path.join(PREFIX, fn))
+                sz += os.path.getsize(os.path.join(prefix, fn))
         result.append((m, sz))
     result.sort(key=lambda x: x[1])
     result = result[start : end]
