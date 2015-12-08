@@ -183,8 +183,7 @@ class Movie(object):
         cur = db.cursor()
 
         filename = "%s/%s-%d.json" % (self.prefix, self.stem, week)
-        source = json_source([filename])
-        for tweet in json_source():     # These should all be tweets.
+        for tweet in json_source([filename]): # These should all be tweets.
             # If we were going to do anything with user info from
             # individual tweets, we'd have to get it here.
             # Prefer the retweeted_status for longer text.
