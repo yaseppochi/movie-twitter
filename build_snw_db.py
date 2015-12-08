@@ -3,7 +3,7 @@ import os
 import os.path
 
 term_extract_command = \
-    "select term_map.term,synsets.positive,synsets.negative " \
+    "select term_map.term,avg(synsets.positive),avg(synsets.negative) " \
     "from term_map inner join synsets " \
     "on term_map.synset=synsets.id " \
     "where term_map.term=? "
@@ -22,18 +22,15 @@ term_table_create_command = "create table term_map ( " \
     "sense integer " \
     ")"
 
-def create_tables():
-    db = sql.connect("twitter.sql")
+def create_tables(db):
     c = db.cursor()
     c.execute(synset_table_create_command)
     c.execute(term_table_create_command)
     c.close()
     db.commit()
-    db.close()
 
-def populate_from_sentiwordnet():
+def populate_from_sentiwordnet(db):
     with open("sentiwordnet-valent.txt") as f:
-        db = sql.connect("twitter.sql")
         c = db.cursor()
         for line in f:
             line = line.strip()
@@ -52,14 +49,12 @@ def populate_from_sentiwordnet():
                           (term[0], fields[1], term[1]))
         c.close()
         db.commit()
-        db.close()
-
 
 
 if __name__ == "__main__":
-    #create_tables()
-    #populate_from_sentiwordnet()
     db = sql.connect("twitter.sql")
+    #create_tables(db)
+    #populate_from_sentiwordnet(db)
     c = db.cursor()
     c.execute("select * from term_map")
     for i in range(10):

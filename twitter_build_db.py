@@ -194,7 +194,7 @@ def populate_tables_from_moviedata():
                       "ScheduledRelease=?," \
                       "InSample=? " \
                       "where Name=?",
-                      (2, date, 0, movie))
+                      (2, date, 1, movie))
         else:
             # create new record
             itemno += 1
@@ -215,7 +215,7 @@ def populate_tables_from_165_notes():
     r = csv.reader(open("165-notes.csv", encoding="latin1"))
     next(r)
     for row in r:
-        print("Updating ", row[0])
+        print("Updating", row[0])
         c.execute("update movies set " \
                   "NotesSource=?, " \
                   "Includes=?," \
@@ -225,7 +225,7 @@ def populate_tables_from_165_notes():
                   "Actors=?," \
                   "InSample=?" \
                   "where Name=?",
-                  (row[8], row[4], True if row[7] == "yes" else False,
+                  (row[8], row[4], True if row[7].lower() == "yes" else False,
                    row[5], row[1], row[2], 1,
                    canonical_name.get(row[0],row[0])))
     db.commit()
