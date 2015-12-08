@@ -317,6 +317,31 @@ class Movie(object):
         # 10. Record.
         return tuple(results)
 
+alias = {
+    #"'71", "71"),
+    #"Can't Stand Losing You: Surviving the Police",
+    # "Can't Stand Losing You Surviving the Police"),
+    #'Do You Believe?', 'Do You Believe'),
+    #'Grandma', 'Grandma (2015)'),
+    "Kahlil Gibran's The Prophet" : 'kahlil-gibran',
+    #'Kumiko, The Treasure Hunter', 'Kumiko The Treasure Hunter'),
+    'Love and Lost (Shi Gu)' : 'love-lost',
+    #'Max', 'Max (2015)'),
+    #'McFarland, USA', 'McFarland USA'),
+    #'Mission: Impossible - Rogue Nation', 'Mission Impossible Rogue Nation'),
+    #'Paul Blart: Mall Cop 2', 'Paul Blart Mall Cop 2'),
+    #'Phoenix', 'Phoenix (2015)'),
+    #'Poltergeist', 'Poltergeist (2015)'),
+    #'Rififi', 'Rififi (2015 re-release)'),
+    #'Seymour: An Introduction', 'Seymour An Introduction'),
+    'Shaun the Sheep Movie' : 'shaun-sheep',
+    'Gemma Bovery' : 'gemma-bovary',
+    #'Tangerines', 'Tangerine'),
+    #'The Divergent Series: Insurgent', 'The Divergent Series Insurgent'),
+    #'The Gift', 'The Gift (2015)'),
+    'The Young & Prodigious T.S. Spivet' : 'young-&-prodigious-t-s-spivet',
+    }
+
 def resample(sample, prefix, start, end):
     """
     Take a list of movies in sample, determine sizes related files in prefix,
@@ -327,11 +352,11 @@ def resample(sample, prefix, start, end):
         return sample
     result = []
     for m in sample:
-        stem = "-".join(
+        stem = alias.get(m, "-".join(
             [w for w
              in m.translate(moviedata.PUNCT).lower().split()
              if w not in moviedata.STOPSET]
-            )
+            ))
         n = len(stem) + 1
         sz = 0
         files = os.listdir(PREFIX)
