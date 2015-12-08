@@ -122,7 +122,7 @@ class Movie(object):
     Construct lists of include and exclude NGrams.
     """
 
-    minwds = 2
+    minwds = 2                          # #### Unused in practice?
     prefix = "/var/local/twitterdb"
     wdb = init_word_db()
     hashes_seen = set()
@@ -359,7 +359,7 @@ if __name__ == "__main__":
         db.close()
     
         for movie in sample:
-            m = Movie
+            m = Movie(movie)
             for i in range(8):
                 print('"%s",%d,%d,%d,%d,%d,%d,%d,%d,%d,'
                       '%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,'
