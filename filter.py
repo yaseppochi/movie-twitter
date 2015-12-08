@@ -182,7 +182,7 @@ class Movie(object):
         populate_from_sentiwordnet(db)
         cur = db.cursor()
 
-        filename = "%s/%s-%d.json" % (prefix, self.file_stem, week)
+        filename = "%s/%s-%d.json" % (self.prefix, self.file_stem, week)
         source = json_source([filename])
         for tweet in json_source:       # These should all be tweets.
             # If we were going to do anything with user info from
