@@ -14,6 +14,7 @@ import os
 import os.path
 import re
 import sqlite3 as sql
+import sys
 
 url_re = re.compile(r"(?:ht|f)tps?://\S*")
 
@@ -361,10 +362,13 @@ if __name__ == "__main__":
         for movie in sample:
             m = Movie(movie)
             for i in range(8):
-                print('"%s",%d,%d,%d,%d,%d,%d,%d,%d,%d,'
-                      '%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,'
-                      '%.3f,%.3f,%d,%d' % m.process_week(i),
-                      file=f)
-                f.flush()
+                try:
+                    print('"%s",%d,%d,%d,%d,%d,%d,%d,%d,%d,'
+                          '%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,'
+                          '%.3f,%.3f,%d,%d' % m.process_week(i),
+                          file=f)
+                    f.flush()
+                except FileNotFoundError:
+                    print("File not found:", week, "of", movie, file=sys.stderr)
     # close up shop.
     Movie.wdb.close()
