@@ -374,6 +374,10 @@ def resample(sample, prefix, start, end):
         result.append((m, sz))
     result.sort(key=lambda x: x[1])
     result = result[start : end]
+    try:
+        result.remove("The DUFF")
+    except ValueError:
+        pass
     print(*(y[1] // 1000 for y in result))
     return [y[0] for y in result]
     
