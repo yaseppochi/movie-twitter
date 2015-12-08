@@ -324,6 +324,7 @@ def resample(sample, prefix, start, end):
     with the smallest movie.
     """
     if START is None:
+        print("bailing")
         return sample
     result = []
     for m in sample:
