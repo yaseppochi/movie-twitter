@@ -261,7 +261,7 @@ class Movie(object):
                 results = []
                 for ngram in self.includes:
                     results.extend(ngram.match(tokens))
-                if not (results or any(movie_words.match(t) for t in tokens)):
+                if not (results or any(movie_word_re.match(t) for t in tokens)):
                     must_include_mismatches += 1
                     continue
 
