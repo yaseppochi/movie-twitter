@@ -331,6 +331,7 @@ class Movie(object):
             results[18] += r[6]
             results[19] += r[7]
         # 9b. ... and average.
+        # #### Can numerators be non-zero if denominators are zero?
         if results[9]:
             results[13] = results[10] / results[9]
             results[17] = results[14] / results[9]
