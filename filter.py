@@ -331,16 +331,19 @@ class Movie(object):
             results[18] += r[6]
             results[19] += r[7]
         # 9b. ... and average.
-        results[13] = results[10] / results[9]
-        results[12] = results[10] / results[8]
-        results[11] = results[11] / results[5]  # #### per unique tweet?
-        results[10] = results[10] / results[5]
-        results[17] = results[14] / results[9]
-        results[16] = results[14] / results[8]
-        results[15] = results[15] / results[5]  # #### per unique tweet?
-        results[14] = results[14] / results[5]
-        results[18] = results[18] / results[5]
-        results[19] = results[19] / results[5]
+        if results[9]:
+            results[13] = results[10] / results[9]
+            results[17] = results[14] / results[9]
+        if results[8]:
+            results[12] = results[10] / results[8]
+            results[16] = results[14] / results[8]
+        if results[4]:
+            results[11] = results[11] / results[4]  # #### per unique tweet?
+            results[10] = results[10] / results[4]
+            results[15] = results[15] / results[4]  # #### per unique tweet?
+            results[14] = results[14] / results[4]
+            results[18] = results[18] / results[4]
+            results[19] = results[19] / results[4]
         # 10. Record.
         return tuple(results)
 
@@ -420,7 +423,7 @@ if __name__ == "__main__":
         c.close()
         db.close()
 
-        sample = resample(sample, PREFIX, 4, 50)
+        sample = resample(sample, PREFIX, 0, 50)
         print(sample, sys.stderr)
     
         for movie in sample:
