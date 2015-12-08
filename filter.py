@@ -355,7 +355,7 @@ if __name__ == "__main__":
     c.execute("select Name from movies where InSample=1")
     movie_list = [x[0] for x in c]
     print(movie_list)
-    print(len)
+    print(len(movie_list))
     c.close()
     db.close()
     
