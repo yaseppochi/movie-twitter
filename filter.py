@@ -133,12 +133,14 @@ class Movie(object):
         self.ngram = NGram(name, self.minwds)
         self.includes = [self.ngram] if len(self.ngram) >= self.minwds else []
         self.excludes = []
-        c = sql.connect("/var/local/twitterdb/twitter.sql").cursor()
+        db = sql.connect("/var/local/twitterdb/twitter.sql")
+        c = db.cursor()
         c.execute("select Includes,MustInclude,Excludes,Director,Actors,"
                   "ReleaseMonth,ScheduledRelease "
                   "from movies where name=?", (name,))
         inc, must, exc, dirs, stars, actual, scheduled = c.fetchone()
         c.close()
+        db.close()
         self.must_match_include = must
         # #### Refactor to make includes empty on not must?
         if dirs is not None:
@@ -347,8 +349,16 @@ if __name__ == "__main__":
                 "Week",
                 ]),
               file=f)
-    
     # get movie list
+    db = sql.connect("/var/local/twitterdb/twitter.sql")
+    c = db.cursor()
+    c.execute("select Name from movies where InSample=1")
+    movie_list = [x[0] for x in c]
+    print(movie_list)
+    print(len)
+    c.close()
+    db.close()
+    
     # for movie in sample: m = Movie
     #   for i in range(8): print to csv m.process_week(i)
     # close up shop.
