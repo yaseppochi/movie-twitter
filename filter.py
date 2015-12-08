@@ -321,7 +321,7 @@ if __name__ == "__main__":
     print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    with open("/var/local/tweetdb/movie-week-sentiment.csv", "a") as f:
+    with open("/var/local/twitterdb/movie-week-sentiment.csv", "a") as f:
         print(",".join(
             repr(s) for s in [
                 "Name of movie",
