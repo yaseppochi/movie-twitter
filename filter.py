@@ -383,8 +383,11 @@ if __name__ == "__main__":
         print("n2 match is", n2.match(s))
 
     # print headers to CSV
-    with open(os.path.join(EXEC_PREFIX, "movie-week-sentiment.csv"), "a") as f:
-        print(",".join([
+    csvfile = os.path.join(EXEC_PREFIX, "movie-week-sentiment.csv")
+    printheader = not os.path.exists(csvfile)
+    with open(csvfile, "a") as f:
+        if printheader:
+            print(",".join([
                 "Name of movie",
                 "Total tweets in file",
                 "Count of tweets excluded by excludes",
@@ -408,7 +411,7 @@ if __name__ == "__main__":
                 "Hash repeat count",
                 "Week",
                 ]),
-              file=f)
+                  file=f)
         # get movie list
         db = sql.connect(os.path.join(PREFIX, "twitter.sql"))
         c = db.cursor()
@@ -417,7 +420,7 @@ if __name__ == "__main__":
         c.close()
         db.close()
 
-        sample = resample(sample, PREFIX, 0, 20)
+        sample = resample(sample, PREFIX, 4, 50)
         print(sample, sys.stderr)
     
         for movie in sample:
